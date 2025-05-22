@@ -3,20 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý Đào tạo</title>
+    <title>Ứng dụng Quản lý Đào tạo Nội bộ</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
-    <link rel="stylesheet" href="style.css"> 
+    <style>
+        body {
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8f9fa; 
+            padding-top: 56px; 
+        }
+        .navbar {
+            background-color: #ffffff; 
+            box-shadow: 0 2px 4px rgba(0,0,0,.1); 
+        }
+        .navbar .nav-link {
+            color: #343a40 !important; 
+            font-weight: 500;
+            padding-left: 0.8rem !important;
+            padding-right: 0.8rem !important;
+        }
+        .navbar .nav-link.active, .navbar .nav-link:hover {
+            color: #007bff !important; 
+        }
+
+        .sidebar {
+            height: calc(100vh - 56px); 
+            position: fixed;
+            top: 56px; 
+            left: 0;
+            width: 250px; 
+            background-color: #343a40; 
+            color: #ffffff; 
+            z-index: 100; 
+            transition: all 0.3s;
+            overflow-y: auto; 
+            padding-top: 1rem; 
+        }
+        .sidebar .nav-link {
+            color: #adb5bd; 
+            padding: 10px 15px;
+            border-radius: 0.25rem; 
+            margin-bottom: 5px; 
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active-sidebar { 
+            color: #ffffff; 
+            background-color: #495057; 
+        }
+        .sidebar .nav-link .fa-fw {
+            margin-right: 8px; 
+        }
+        .content-wrapper {
+            margin-left: 250px; 
+            padding-top: 20px; 
+            padding-bottom: 20px;
+            transition: margin-left 0.3s;
+        }
+        .page-title {
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+        .card {
+            border-radius: 0.5rem; 
+            box-shadow: 0 2px 10px rgba(0,0,0,.075); 
+        }
+        .table th {
+            background-color: #e9ecef; 
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        
+        @media (max-width: 992px) {
+            .sidebar {
+                left: -250px; 
+                top: 0; 
+                padding-top: 56px; 
+                height: 100vh;
+            }
+            .sidebar.active {
+                left: 0; 
+            }
+            .content-wrapper {
+                margin-left: 0; 
+            }
+        }
+        .sidebar-toggler {
+        }
+        .employee-list-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .ma-khoa-hoc-rut-gon {
+            display: inline-block;
+            max-width: 120px; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            vertical-align: bottom; 
+        }
+        .ten-khoa-hoc-tooltip { 
+            cursor: help; 
+        }
+        .modal-body .form-label {
+            font-weight: 500; 
+        }
+        .modal-body hr {
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .modal-body h6 { 
+            color: #007bff;
+            margin-bottom: 1rem;
+            margin-top: 0.5rem;
+            font-weight: 600;
+        }
+         /* Select2 custom styling if needed */
+        .select2-container--bootstrap-5 .select2-selection--single {
+            height: calc(1.5em + .75rem + 2px); /* Match Bootstrap form-control height */
+            padding: .375rem .75rem;
+            display: flex; 
+            align-items: center; 
+        }
+        .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+            line-height: 1.5;
+        }
+        .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow {
+            height: calc(1.5em + .75rem); 
+            position: absolute;
+            top: 50%;
+            right: .75rem;
+            transform: translateY(-50%);
+        }
+        .select2-dropdown { 
+            z-index: 1061 !important; /* Tang z-index de hien thi tren modal */
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
         <div class="container-fluid">
-            <button class="navbar-toggler me-2" type="button" id="sidebarToggler" aria-label="Toggle sidebar">
+            <button class="navbar-toggler me-2" type="button" onclick="toggleSidebar()" aria-label="Toggle sidebar">
                 <i class="fas fa-bars"></i>
             </button>
-            <a class="navbar-brand" href="#" data-page="trangTongQuan">
+            <a class="navbar-brand" href="#" onclick="hienThiTrang('trangTongQuan')">
                 <i class="fas fa-graduation-cap me-2"></i> Quản lý Đào tạo
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
@@ -25,13 +161,16 @@
             <div class="collapse navbar-collapse" id="navbarNavDropdown">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link" href="#" data-page="trangTongQuan">Tổng quan</a>
+                        <a class="nav-link" href="#" onclick="hienThiTrang('trangTongQuan')">Tổng quan</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" data-page="trangKeHoachDaoTao">Kế hoạch</a>
+                        <a class="nav-link" href="#" onclick="hienThiTrang('trangKeHoachDaoTao')">Kế hoạch</a>
                     </li>
-                     <li class="nav-item">
-                        <a class="nav-link" href="#" data-page="trangChonNhanVienDaoTao">Chọn Nhân viên</a>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="hienThiTrang('trangYeuCauDaoTao')">Yêu cầu</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="hienThiTrang('trangChonNhanVienDaoTao')">Chọn Nhân viên</a>
                     </li>
                 </ul>
                 <ul class="navbar-nav ms-auto">
@@ -42,7 +181,7 @@
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
                             <li><a class="dropdown-item" href="#">Thông tin cá nhân</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#" id="btnDangXuat">Đăng xuất</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="xuLyDangXuat()">Đăng xuất</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -52,21 +191,24 @@
 
     <div class="sidebar" id="appSidebar">
         <nav class="nav flex-column p-3">
-            <a class="nav-link" href="#" data-page="trangTheoDoiKetQua"><i class="fas fa-tasks fa-fw"></i> Theo dõi Kết quả</a>
+            <a class="nav-link" href="#" onclick="hienThiTrang('trangTheoDoiKetQua')"><i class="fas fa-tasks fa-fw"></i> Theo dõi Kết quả</a>
             <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="collapse" href="#collapseDanhMuc" role="button" aria-expanded="false" aria-controls="collapseDanhMuc">
                     <i class="fas fa-cogs fa-fw"></i> Quản lý Danh mục
                 </a>
                 <div class="collapse" id="collapseDanhMuc">
                     <ul class="nav flex-column ps-3">
-                        <li class="nav-item"><a class="nav-link" href="#" data-page="trangDanhMucKhoaHoc"><i class="fas fa-book fa-fw"></i> Khóa đào tạo</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#" data-page="trangDanhMucPhongBan"><i class="fas fa-building fa-fw"></i> Phòng ban</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#" data-page="trangDanhMucGiangVien"><i class="fas fa-chalkboard-teacher fa-fw"></i> Giảng viên</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#" data-page="trangDanhMucDonViDaoTao"><i class="fas fa-school fa-fw"></i> Đơn vị đào tạo</a></li>
-                        </ul>
+                        <li class="nav-item"><a class="nav-link" href="#" onclick="hienThiTrang('trangDanhMucKhoaHoc')"><i class="fas fa-book fa-fw"></i> Khóa đào tạo</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#" onclick="hienThiTrang('trangDanhMucNhanVien')"><i class="fas fa-users fa-fw"></i> Nhân viên</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#" onclick="hienThiTrang('trangDanhMucPhongBan')"><i class="fas fa-building fa-fw"></i> Phòng ban</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#" onclick="hienThiTrang('trangDanhMucChucDanh')"><i class="fas fa-id-badge fa-fw"></i> Chức danh</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#" onclick="hienThiTrang('trangDanhMucNguoiPheDuyet')"><i class="fas fa-user-check fa-fw"></i> Người phê duyệt</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#" onclick="hienThiTrang('trangDanhMucGiangVien')"><i class="fas fa-chalkboard-teacher fa-fw"></i> Giảng viên</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#" onclick="hienThiTrang('trangDanhMucDonViDaoTao')"><i class="fas fa-school fa-fw"></i> Đơn vị đào tạo</a></li>
+                    </ul>
                 </div>
             </li>
-            <a class="nav-link" href="#" data-page="trangBaoCao"><i class="fas fa-chart-bar fa-fw"></i> Báo cáo</a>
+            <a class="nav-link" href="#" onclick="hienThiTrang('trangBaoCao')"><i class="fas fa-chart-bar fa-fw"></i> Báo cáo & Thống kê</a>
         </nav>
     </div>
 
@@ -82,7 +224,7 @@
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <span>Danh sách Khóa đào tạo</span>
-                        <button class="btn btn-primary btn-sm" id="btnMoModalThemKhoaHoc">
+                        <button class="btn btn-primary btn-sm" onclick="moModalThemKhoaHoc()">
                             <i class="fas fa-plus me-1"></i> Thêm Khóa học
                         </button>
                     </div>
@@ -95,13 +237,16 @@
                                         <th>Tên Khóa học</th>
                                         <th>Thời lượng</th>
                                         <th>Hình thức</th>
-                                        <th>Chi phí</th>
+                                        <th>Chi phí (dự kiến)</th>
                                         <th>Hành động</th>
                                     </tr>
                                 </thead>
                                 <tbody id="bangDanhSachKhoaHoc"></tbody>
                             </table>
                         </div>
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center" id="phanTrangKhoaHoc"></ul>
+                        </nav>
                     </div>
                 </div>
             </div>
@@ -111,7 +256,7 @@
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <span>Danh sách Phòng Ban</span>
-                        <button class="btn btn-primary btn-sm" id="btnMoModalThemPhongBan">
+                        <button class="btn btn-primary btn-sm" onclick="moModalThemPhongBan()">
                             <i class="fas fa-plus me-1"></i> Thêm Phòng Ban
                         </button>
                     </div>
@@ -139,7 +284,7 @@
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <span>Danh sách Giảng Viên</span>
-                        <button class="btn btn-primary btn-sm" id="btnMoModalThemGiangVien">
+                        <button class="btn btn-primary btn-sm" onclick="moModalThemGiangVien()">
                             <i class="fas fa-plus me-1"></i> Thêm Giảng Viên
                         </button>
                     </div>
@@ -169,7 +314,7 @@
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <span>Danh sách Đơn Vị Đào Tạo</span>
-                        <button class="btn btn-primary btn-sm" id="btnMoModalThemDonViDaoTao">
+                        <button class="btn btn-primary btn-sm" onclick="moModalThemDonViDaoTao()">
                             <i class="fas fa-plus me-1"></i> Thêm Đơn Vị
                         </button>
                     </div>
@@ -192,15 +337,91 @@
                     </div>
                 </div>
             </div>
+
+
+            <div id="trangChonNhanVienDaoTao" class="page-content" style="display: none;">
+                <h2 class="page-title">Chọn Nhân viên Tham gia Đào tạo</h2>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="selectKhoaHocChoNhanVien" class="form-label">Chọn Khóa Đào tạo:</label>
+                                <select class="form-select" id="selectKhoaHocChoNhanVien" onchange="taiDanhSachNhanVienCoTheChon()">
+                                    <option value="">Vui lòng chọn khóa học...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <hr>
+                        <fieldset class="mb-3 p-3 border rounded">
+                            <legend class="w-auto px-2 h6">Bộ lọc nhân viên</legend>
+                            <div class="row">
+                                <div class="col-md-3 mb-2">
+                                    <label for="filterPhongBan" class="form-label">Phòng ban:</label>
+                                    <select class="form-select form-select-sm" id="filterPhongBan">
+                                        <option value="">Tất cả</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <label for="filterChucDanh" class="form-label">Chức danh:</label>
+                                    <input type="text" class="form-control form-control-sm" id="filterChucDanh" placeholder="Nhập chức danh...">
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <label for="filterNamCongTac" class="form-label">Năm công tác (tối thiểu):</label>
+                                    <input type="number" class="form-control form-control-sm" id="filterNamCongTac" min="0" placeholder="Số năm...">
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <button type="button" class="btn btn-secondary btn-sm mt-4 w-100" onclick="taiDanhSachNhanVienCoTheChon()">
+                                        <i class="fas fa-filter me-1"></i> Lọc Nhân viên
+                                    </button>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <div class="row">
+                            <div class="col-md-7">
+                                <h5>Danh sách Nhân viên Phù hợp:</h5>
+                                <div class="employee-list-container border rounded p-2">
+                                    <table class="table table-sm table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th><input type="checkbox" id="chonTatCaNhanVien" onchange="xuLyChonTatCaNhanVien(this.checked)"></th>
+                                                <th>Mã NV</th>
+                                                <th>Họ Tên</th>
+                                                <th>Phòng Ban</th>
+                                                <th>Chức Danh</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="bangDanhSachNhanVienDeChon"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <h5>Nhân viên đã chọn (<span id="soLuongNhanVienDaChon">0</span>):</h5>
+                                <div class="employee-list-container border rounded p-2" id="danhSachNhanVienDaChonContainer">
+                                    <ul class="list-group" id="listNhanVienDaChon"></ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 text-end">
+                            <button class="btn btn-success" onclick="luuDanhSachHocVienDaChon()">
+                                <i class="fas fa-save me-1"></i> Lưu Danh sách Học viên
+                            </button>
+                            <button class="btn btn-outline-secondary ms-2" onclick="xuatDanhSachHocVien()">
+                                <i class="fas fa-print me-1"></i> Xuất/In Danh sách
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div id="trangKeHoachDaoTao" class="page-content" style="display: none;"><h2 class="page-title">Lập Kế hoạch Đào tạo theo Năm</h2><p class="text-muted">Chức năng đang được phát triển.</p></div>
             <div id="trangYeuCauDaoTao" class="page-content" style="display: none;"><h2 class="page-title">Gửi và Quản lý Yêu cầu Đào tạo</h2><p class="text-muted">Chức năng đang được phát triển.</p></div>
-            <div id="trangChonNhanVienDaoTao" class="page-content" style="display: none;"><h2 class="page-title">Chọn Nhân viên tham gia Đào tạo</h2><p class="text-muted">Chức năng đang được phát triển.</p></div>
-            <div id="trangTheoDoiKetQua" class="page-content" style="display: none;"><h2 class="page-title">Theo dõi Kết quả Đào tạo</h2><p class="text-muted">Chức năng đang được phát triển.</p></div>
-            <div id="trangDanhMucNhanVien" class="page-content" style="display: none;"><h2 class="page-title">Quản lý Danh mục Nhân viên</h2><p class="text-muted">Chức năng đang được phát triển.</p></div>
-            <div id="trangDanhMucChucDanh" class="page-content" style="display: none;"><h2 class="page-title">Quản lý Danh mục Chức danh</h2><p class="text-muted">Chức năng đang được phát triển.</p></div>
-            <div id="trangDanhMucNguoiPheDuyet" class="page-content" style="display: none;"><h2 class="page-title">Quản lý Danh mục Người phê duyệt</h2><p class="text-muted">Chức năng đang được phát triển.</p></div>
-            <div id="trangBaoCao" class="page-content" style="display: none;"><h2 class="page-title">Báo cáo & Thống kê</h2><p class="text-muted">Chức năng đang được phát triển.</p></div>
-
+            <div id="trangTheoDoiKetQua" class="page-content" style="display: none;"><h2 class="page-title">Theo dõi và Đánh giá Kết quả Đào tạo</h2><p class="text-muted">Chức năng đang được phát triển.</p></div>
+            <div id="trangDanhMucNhanVien" class="page-content" style="display: none;"><h2 class="page-title">Quản lý Danh mục Nhân Viên</h2><p class="text-muted">Chức năng đang được phát triển.</p></div>
+            <div id="trangDanhMucChucDanh" class="page-content" style="display: none;"><h2 class="page-title">Quản lý Danh mục Chức Danh</h2><p class="text-muted">Chức năng đang được phát triển.</p></div>
+            <div id="trangDanhMucNguoiPheDuyet" class="page-content" style="display: none;"><h2 class="page-title">Quản lý Danh mục Người Phê Duyệt</h2><p class="text-muted">Chức năng đang được phát triển.</p></div>
+            <div id="trangBaoCao" class="page-content" style="display: none;"><h2 class="page-title">Báo cáo và Thống kê</h2><p class="text-muted">Chức năng đang được phát triển.</p></div>
         </div>
     </div>
 
@@ -320,7 +541,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="button" class="btn btn-primary" id="btnLuuKhoaHoc">Lưu Thay đổi</button>
+                    <button type="button" class="btn btn-primary" onclick="luuKhoaHoc()">Lưu Thay đổi</button>
                 </div>
             </div>
         </div>
@@ -372,7 +593,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="button" class="btn btn-primary" id="btnLuuPhongBan">Lưu Thay đổi</button>
+                    <button type="button" class="btn btn-primary" onclick="luuPhongBan()">Lưu Thay đổi</button>
                 </div>
             </div>
         </div>
@@ -471,7 +692,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="button" class="btn btn-primary" id="btnLuuGiangVien">Lưu Thay đổi</button>
+                    <button type="button" class="btn btn-primary" onclick="luuGiangVien()">Lưu Thay đổi</button>
                 </div>
             </div>
         </div>
@@ -544,7 +765,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="button" class="btn btn-primary" id="btnLuuDonViDaoTao">Lưu Thay đổi</button>
+                    <button type="button" class="btn btn-primary" onclick="luuDonViDaoTao()">Lưu Thay đổi</button>
                 </div>
             </div>
         </div>
@@ -590,7 +811,6 @@
     
     <script>
         // --- KHAI BAO BIEN TOAN CUC ---
-        const API_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE/exec"; // THAY THE URL NAY
         const CAC_TRANG = document.querySelectorAll('.page-content');
         const modalKhoaHocInstance = new bootstrap.Modal(document.getElementById('modalKhoaHoc'));
         const modalPhongBanInstance = new bootstrap.Modal(document.getElementById('modalPhongBan')); 
@@ -598,7 +818,6 @@
         const modalDonViDaoTaoInstance = new bootstrap.Modal(document.getElementById('modalDonViDaoTao')); 
         const modalXacNhanXoaInstance = new bootstrap.Modal(document.getElementById('modalXacNhanXoa')); 
         const toastInstance = new bootstrap.Toast(document.getElementById('liveToast'));
-        
         let dangChinhSuaKhoaHoc = false;
         let currentKhoaHocData = null; 
         let dangChinhSuaPhongBan = false; 
@@ -618,7 +837,13 @@
                 console.error('Bootstrap Collapse component is not loaded or available!');
                 hienThiToast('Lỗi nghiêm trọng', 'Thành phần giao diện chính (Collapse) không tải được.', 'error');
             }
-            // Khong goi layThongTinNguoiDungHienTai() nua vi se xu ly xac thuc khac khi dung API
+
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run.withSuccessHandler(capNhatTenNguoiDung).layThongTinNguoiDungHienTai();
+            } else {
+                console.warn("Google Apps Script API (google.script.run) khong kha dung. Ban co dang chay tu URL trien khai khong?");
+                capNhatTenNguoiDung({ email: "Khach (Offline)", ten: "Khach (Offline)"});
+            }
             
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
             tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -632,28 +857,8 @@
                 modalXacNhanXoaInstance.hide();
             });
 
-            // Gan su kien click cho cac nut mo modal va luu
-            document.getElementById('btnMoModalThemKhoaHoc').addEventListener('click', moModalThemKhoaHoc);
-            document.getElementById('btnLuuKhoaHoc').addEventListener('click', luuKhoaHoc);
-            document.getElementById('btnMoModalThemPhongBan').addEventListener('click', moModalThemPhongBan);
-            document.getElementById('btnLuuPhongBan').addEventListener('click', luuPhongBan);
-            document.getElementById('btnMoModalThemGiangVien').addEventListener('click', moModalThemGiangVien);
-            document.getElementById('btnLuuGiangVien').addEventListener('click', luuGiangVien);
-            document.getElementById('btnMoModalThemDonViDaoTao').addEventListener('click', moModalThemDonViDaoTao);
-            document.getElementById('btnLuuDonViDaoTao').addEventListener('click', luuDonViDaoTao);
-
-            // Gan su kien click cho cac link dieu huong
-            document.querySelectorAll('.navbar .nav-link[data-page], .sidebar .nav-link[data-page]').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    hienThiTrang(this.dataset.page);
-                });
-            });
-            document.getElementById('sidebarToggler').addEventListener('click', toggleSidebar);
-
-
             // Khoi tao Select2 cho cac modal khi chung duoc hien thi
-             $('#modalKhoaHoc').on('shown.bs.modal', function () {
+            $('#modalKhoaHoc').on('shown.bs.modal', function () {
                 const select2Options = { theme: "bootstrap-5", dropdownParent: $(this), width: '100%' };
                 if (!$('#maDonViToChucNoiBo').data('select2')) { $('#maDonViToChucNoiBo').select2(select2Options); }
                 if (!$('#maDonViDaoTaoNgoai').data('select2')) { $('#maDonViDaoTaoNgoai').select2(select2Options); }
@@ -683,6 +888,7 @@
                     $('#maDonViDaoTaoGV').val(currentGiangVienData.maDonViDaoTao || "").trigger('change');
                 }
             });
+            
         });
 
         // --- HAM XU LY GIAO DIEN CHUNG (TIEN ICH) ---
@@ -701,7 +907,7 @@
             document.querySelectorAll('.navbar .nav-link').forEach(link => {
                 link.classList.remove('active');
             });
-            const activeNavbarLink = document.querySelector(`.navbar .nav-link[data-page="${idTrang}"]`);
+            const activeNavbarLink = document.querySelector(`.navbar .nav-link[onclick="hienThiTrang('${idTrang}')"]`);
             if (activeNavbarLink) {
                 activeNavbarLink.classList.add('active');
             }
@@ -710,7 +916,7 @@
                 link.classList.remove('active-sidebar'); 
             });
 
-            const activeSidebarLink = document.querySelector(`.sidebar .nav-link[data-page="${idTrang}"]`);
+            const activeSidebarLink = document.querySelector(`.sidebar .nav-link[onclick="hienThiTrang('${idTrang}')"]`);
             if (activeSidebarLink) {
                 activeSidebarLink.classList.add('active-sidebar'); 
 
@@ -732,25 +938,30 @@
                 }
             }
 
-            // Tai du lieu cho trang cu the khi chuyen trang
-            if (idTrang === 'trangDanhMucKhoaHoc') {
-                taiDanhSachKhoaHoc();
-                taiDuLieuChoSelectsFormKhoaHoc();
-            } else if (idTrang === 'trangDanhMucPhongBan') {
-                taiDanhSachPhongBan();
-                taiDanhSachPhongBanChaChoSelect(); 
-            } else if (idTrang === 'trangDanhMucGiangVien') {
-                taiDanhSachGiangVien();
-                taiDuLieuChoSelectsFormGiangVien();
-            } else if (idTrang === 'trangDanhMucDonViDaoTao') {
-                taiDanhSachDonViDaoTao();
-            }
-             else if (idTrang === 'trangChonNhanVienDaoTao') {
-                // taiKhoaHocVaoSelectChonNhanVien(); // Se duoc goi khi can
-                // taiPhongBanVaoFilterChonNhanVien(); // Se duoc goi khi can
-                danhSachNhanVienDaChonTamThoi = []; 
-                capNhatDanhSachNhanVienDaChonUI();
-                document.getElementById('bangDanhSachNhanVienDeChon').innerHTML = '<tr><td colspan="5" class="text-center">Vui lòng chọn khóa học và áp dụng bộ lọc.</td></tr>';
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                if (idTrang === 'trangDanhMucKhoaHoc') {
+                    taiDanhSachKhoaHoc();
+                    taiDuLieuChoSelectsFormKhoaHoc();
+                } else if (idTrang === 'trangDanhMucPhongBan') {
+                    taiDanhSachPhongBan();
+                    taiDanhSachPhongBanChaChoSelect(); 
+                } else if (idTrang === 'trangDanhMucGiangVien') {
+                    taiDanhSachGiangVien();
+                    taiDuLieuChoSelectsFormGiangVien();
+                } else if (idTrang === 'trangDanhMucDonViDaoTao') {
+                    taiDanhSachDonViDaoTao();
+                }
+                 else if (idTrang === 'trangChonNhanVienDaoTao') {
+                    taiKhoaHocVaoSelectChonNhanVien();
+                    taiPhongBanVaoFilterChonNhanVien();
+                    danhSachNhanVienDaChonTamThoi = []; 
+                    capNhatDanhSachNhanVienDaChonUI();
+                    document.getElementById('bangDanhSachNhanVienDeChon').innerHTML = '<tr><td colspan="5" class="text-center">Vui lòng chọn khóa học và áp dụng bộ lọc.</td></tr>';
+                }
+            } else {
+                 if (idTrang !== 'trangTongQuan') { 
+                    hienThiToast('Cảnh báo', 'Không thể tải dữ liệu. Vui lòng kiểm tra kết nối hoặc đảm bảo bạn đang chạy ứng dụng từ URL triển khai.', 'warning');
+                }
             }
         }
 
@@ -769,7 +980,6 @@
         }
 
         function capNhatTenNguoiDung(nguoiDung) {
-            // Ham nay se can thay doi neu ban muon lay thong tin nguoi dung tu API
             if (nguoiDung && nguoiDung.email) {
                 document.getElementById('tenNguoiDung').textContent = nguoiDung.ten || nguoiDung.email;
             } else {
@@ -778,18 +988,27 @@
         }
         
         function xuLyDangXuat() {
-            // Ham nay se can thay doi neu ban muon xu ly dang xuat qua API
-            hienThiToast('Thông báo', 'Chức năng đăng xuất sẽ được cập nhật.', 'info');
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run.withSuccessHandler(function(urlLogout){
+                    if (urlLogout && typeof urlLogout === 'string') {
+                        window.location.href = urlLogout;
+                    } else {
+                        hienThiToast('Thông báo', 'Bạn đã yêu cầu đăng xuất.', 'info');
+                    }
+                }).withFailureHandler(xuLyLoi).logout();
+            } else {
+                 hienThiToast('Thông báo', 'Chức năng đăng xuất yêu cầu chạy từ server.', 'info');
+            }
         }
 
         function toggleSidebar() {
             document.getElementById('appSidebar').classList.toggle('active');
         }
         
-        function xuLyLoiAPI(error, context = "") { 
-             console.error(`Lỗi API ${context}: `, error);
-            const message = error.message || 'Lỗi không xác định từ server.';
-            hienThiToast(`Lỗi API ${context}`, 'Có lỗi xảy ra: ' + message, 'error');
+        function xuLyLoi(errorObject) { 
+             console.error('Lỗi chi tiết từ Google Apps Script: ', JSON.stringify(errorObject, null, 2));
+            const message = typeof errorObject === 'string' ? errorObject : (errorObject && errorObject.message ? errorObject.message : 'Lỗi không xác định từ server.');
+            hienThiToast('Lỗi Hệ thống', 'Có lỗi xảy ra: ' + message, 'error');
         }
         
         // --- MODULE: DANH MUC KHOA HOC ---
@@ -804,49 +1023,38 @@
             modalKhoaHocInstance.show();
         }
 
-        async function moModalSuaKhoaHoc(maKhoaHoc) {
-            console.log("Requesting details for maKhoaHoc:", maKhoaHoc);
-            try {
-                const response = await fetch(`${API_URL}?action=layChiTietKhoaHoc&maKhoaHoc=${encodeURIComponent(maKhoaHoc)}`);
-                const result = await response.json();
-                console.log("Response from layChiTietKhoaHoc:", result);
-
-                if (result.success && result.data) {
-                    const khoaHoc = result.data;
-                    dangChinhSuaKhoaHoc = true;
-                    currentKhoaHocData = khoaHoc; 
-                    document.getElementById('formKhoaHoc').reset();
-                    document.getElementById('modalKhoaHocLabel').textContent = 'Chỉnh sửa Khóa Đào tạo';
-                    
-                    document.getElementById('maKhoaHocAn').value = khoaHoc.maKhoaHoc; 
-                    document.getElementById('maKhoaHoc').value = khoaHoc.maKhoaHoc;
-                    document.getElementById('maKhoaHoc').disabled = true;
-                    document.getElementById('tenKhoaHoc').value = khoaHoc.tenKhoaHoc;
-                    document.getElementById('noiDungChinh').value = khoaHoc.noiDungChinh || '';
-                    document.getElementById('thoiLuong').value = khoaHoc.thoiLuong || '';
-                    document.getElementById('donViThoiLuong').value = khoaHoc.donViThoiLuong || 'Gio'; 
-                    document.getElementById('chiPhiDuKien').value = khoaHoc.chiPhiDuKien || '';
-                    document.getElementById('donViTienTe').value = khoaHoc.donViTienTe || 'VND';
-                    document.getElementById('hinhThucDaoTao').value = khoaHoc.hinhThucDaoTao || 'Offline';
-                    document.getElementById('trangThaiKhoaHoc').value = khoaHoc.trangThaiKhoaHoc || 'Đang hoạt động';
-                    
-                    taiDuLieuChoSelectsFormKhoaHoc(true); 
-                    
-                    document.getElementById('taiLieuLienQuan').value = khoaHoc.taiLieuLienQuan || '';
-                    document.getElementById('mucTieuKhoaHoc').value = khoaHoc.mucTieuKhoaHoc || '';
-                    document.getElementById('doiTuongPhuHop').value = khoaHoc.doiTuongPhuHop || '';
-                    document.getElementById('ghiChuKhoaHoc').value = khoaHoc.ghiChu || '';
-                    modalKhoaHocInstance.show();
-                } else {
-                    hienThiToast('Lỗi', result.message || 'Không tìm thấy thông tin khóa học.', 'error');
-                }
-            } catch (error) {
-                xuLyLoiAPI(error, "moModalSuaKhoaHoc");
-            }
+        function moModalSuaKhoaHoc(khoaHocDuLieu) {
+            dangChinhSuaKhoaHoc = true;
+            currentKhoaHocData = khoaHocDuLieu; 
+            document.getElementById('formKhoaHoc').reset();
+            document.getElementById('modalKhoaHocLabel').textContent = 'Chỉnh sửa Khóa Đào tạo';
+            document.getElementById('maKhoaHocAn').value = khoaHocDuLieu.maKhoaHoc;
+            document.getElementById('maKhoaHoc').value = khoaHocDuLieu.maKhoaHoc;
+            document.getElementById('maKhoaHoc').disabled = true;
+            document.getElementById('tenKhoaHoc').value = khoaHocDuLieu.tenKhoaHoc;
+            document.getElementById('noiDungChinh').value = khoaHocDuLieu.noiDungChinh || '';
+            document.getElementById('thoiLuong').value = khoaHocDuLieu.thoiLuong || '';
+            document.getElementById('donViThoiLuong').value = khoaHocDuLieu.donViThoiLuong || 'Gio'; 
+            document.getElementById('chiPhiDuKien').value = khoaHocDuLieu.chiPhiDuKien || '';
+            document.getElementById('donViTienTe').value = khoaHocDuLieu.donViTienTe || 'VND';
+            document.getElementById('hinhThucDaoTao').value = khoaHocDuLieu.hinhThucDaoTao || 'Offline';
+            document.getElementById('trangThaiKhoaHoc').value = khoaHocDuLieu.trangThaiKhoaHoc || 'Đang hoạt động';
+            
+            taiDuLieuChoSelectsFormKhoaHoc(true); 
+            
+            document.getElementById('taiLieuLienQuan').value = khoaHocDuLieu.taiLieuLienQuan || '';
+            document.getElementById('mucTieuKhoaHoc').value = khoaHocDuLieu.mucTieuKhoaHoc || '';
+            document.getElementById('doiTuongPhuHop').value = khoaHocDuLieu.doiTuongPhuHop || '';
+            document.getElementById('ghiChuKhoaHoc').value = khoaHocDuLieu.ghiChu || '';
+            modalKhoaHocInstance.show();
         }
 
-        async function luuKhoaHoc() {
-            const khoaHocData = {
+        function luuKhoaHoc() {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                hienThiToast('Lỗi', 'Không thể kết nối đến server. Vui lòng kiểm tra lại.', 'error');
+                return;
+            }
+            const khoaHoc = {
                 maKhoaHoc: document.getElementById('maKhoaHoc').value.trim(),
                 tenKhoaHoc: document.getElementById('tenKhoaHoc').value.trim(),
                 noiDungChinh: document.getElementById('noiDungChinh').value.trim(),
@@ -865,55 +1073,38 @@
                 ghiChu: document.getElementById('ghiChuKhoaHoc').value.trim()
             };
 
-            if (!khoaHocData.tenKhoaHoc) {
+            if (!khoaHoc.tenKhoaHoc) {
                 hienThiToast('Lỗi', 'Tên khóa học không được để trống.', 'error');
                 return;
             }
 
-            let payload;
+            const successCallback = function(response) {
+                xuLyKetQuaLuuKhoaHoc(response, dangChinhSuaKhoaHoc ? "Cập nhật khóa học thành công!" : "Thêm khóa học mới thành công!");
+            };
+
             if (dangChinhSuaKhoaHoc) {
-                khoaHocData.maKhoaHoc = document.getElementById('maKhoaHocAn').value; 
-                payload = { action: 'capNhatKhoaHoc', duLieu: khoaHocData };
+                khoaHoc.maKhoaHoc = document.getElementById('maKhoaHocAn').value;
+                google.script.run.withSuccessHandler(successCallback).withFailureHandler(xuLyLoi).capNhatKhoaHoc(khoaHoc);
             } else {
-                payload = { action: 'themKhoaHoc', duLieu: khoaHocData };
-            }
-
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-                const result = await response.json();
-
-                if (result.success || result.thanhCong) { 
-                    hienThiToast('Thành công', result.message || result.thongBao || (dangChinhSuaKhoaHoc ? "Cập nhật thành công!" : "Thêm mới thành công!"), 'success');
-                    modalKhoaHocInstance.hide();
-                    taiDanhSachKhoaHoc();
-                } else {
-                    hienThiToast('Lỗi', result.message || result.thongBao || 'Có lỗi xảy ra từ server.', 'error');
-                }
-            } catch (error) {
-                xuLyLoiAPI(error, "luuKhoaHoc");
+                google.script.run.withSuccessHandler(successCallback).withFailureHandler(xuLyLoi).themKhoaHoc(khoaHoc);
             }
         }
-        
-        async function taiDanhSachKhoaHoc() {
+
+        function xuLyKetQuaLuuKhoaHoc(response, thongBaoThanhCong) {
+            if (response.thanhCong) {
+                hienThiToast('Thành công', thongBaoThanhCong, 'success');
+                modalKhoaHocInstance.hide();
+                taiDanhSachKhoaHoc();
+            } else {
+                hienThiToast('Lỗi', response.thongBao || 'Có lỗi xảy ra từ server.', 'error');
+            }
+        }
+
+        function taiDanhSachKhoaHoc() {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) return;
             const tbody = document.getElementById('bangDanhSachKhoaHoc');
             tbody.innerHTML = '<tr><td colspan="6" class="text-center"><div class="spinner-border spinner-border-sm"></div> Đang tải...</td></tr>';
-            try {
-                const response = await fetch(`${API_URL}?action=layDanhSachKhoaHoc`);
-                const result = await response.json();
-
-                if (result.success && result.data) {
-                    hienThiDanhSachKhoaHoc(result.data);
-                } else {
-                    tbody.innerHTML = `<tr><td colspan="6" class="text-center">${result.message || 'Không tải được dữ liệu.'}</td></tr>`;
-                    hienThiToast('Lỗi', result.message || 'Không tải được danh sách khóa học.', 'error');
-                }
-            } catch (error) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center">Lỗi khi tải dữ liệu.</td></tr>';
-                xuLyLoiAPI(error, "taiDanhSachKhoaHoc");
-            }
+            google.script.run.withSuccessHandler(hienThiDanhSachKhoaHoc).withFailureHandler(xuLyLoi).layDanhSachKhoaHoc();
         }
 
         function hienThiDanhSachKhoaHoc(danhSachMang) {
@@ -954,8 +1145,8 @@
                     <td>${khoaHoc.hinhThucDaoTao || ''}</td>
                     <td>${khoaHoc.chiPhiDuKien ? new Intl.NumberFormat('vi-VN').format(khoaHoc.chiPhiDuKien) + ' ' + (khoaHoc.donViTienTe || 'VND') : ''}</td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary me-1" onclick='moModalSuaKhoaHoc("${khoaHoc.maKhoaHoc}")' title="Sửa"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-sm btn-outline-danger" onclick='xacNhanXoaKhoaHocAPI("${khoaHoc.maKhoaHoc}", "${khoaHoc.tenKhoaHoc}")' title="Xóa"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick='suaKhoaHoc("${khoaHoc.maKhoaHoc}")' title="Sửa"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick='moModalXacNhanXoaKhoaHoc("${khoaHoc.maKhoaHoc}", "${khoaHoc.tenKhoaHoc}")' title="Xóa"><i class="fas fa-trash"></i></button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -965,80 +1156,91 @@
                 return new bootstrap.Tooltip(tooltipTriggerEl)
             });
         }
+
+        function suaKhoaHoc(maKhoaHoc) {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) return;
+            google.script.run.withSuccessHandler(function(khoaHocChiTiet) {
+                if (khoaHocChiTiet && khoaHocChiTiet.maKhoaHoc) {
+                    moModalSuaKhoaHoc(khoaHocChiTiet);
+                } else {
+                    hienThiToast('Lỗi', 'Không tìm thấy thông tin khóa học để sửa.', 'error');
+                }
+            }).withFailureHandler(xuLyLoi).layChiTietKhoaHoc(maKhoaHoc);
+        }
         
-        function xacNhanXoaKhoaHocAPI(maKhoaHoc, tenKhoaHoc) {
+        function moModalXacNhanXoaKhoaHoc(maKhoaHoc, tenKhoaHoc) {
             document.getElementById('thongTinXoaModal').textContent = `Khóa học: ${tenKhoaHoc} (Mã: ${maKhoaHoc})`;
             hamXuLyKhiXacNhanXoa = function() {
-                thucHienXoaKhoaHocAPI(maKhoaHoc, tenKhoaHoc);
+                thucHienXoaKhoaHoc(maKhoaHoc, tenKhoaHoc);
             };
             modalXacNhanXoaInstance.show();
         }
 
-        async function thucHienXoaKhoaHocAPI(maKhoaHoc, tenKhoaHoc) {
-            const payload = { action: 'xoaKhoaHoc', maKhoaHoc: maKhoaHoc };
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-                const result = await response.json();
-                if (result.success || result.thanhCong) {
-                    hienThiToast('Thành công', result.message || result.thongBao || `Đã xóa khóa học "${tenKhoaHoc}".`, 'success');
+        function thucHienXoaKhoaHoc(maKhoaHoc, tenKhoaHoc) {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                 hienThiToast('Lỗi', 'Không thể kết nối server để xóa.', 'error');
+                return;
+            }
+            google.script.run.withSuccessHandler(function(response) {
+                if (response.thanhCong) {
+                    hienThiToast('Thành công', `Đã xóa khóa học "${tenKhoaHoc}".`, 'success');
                     taiDanhSachKhoaHoc();
                 } else {
-                    hienThiToast('Lỗi', result.message || result.thongBao || 'Xóa khóa học thất bại.', 'error');
+                    hienThiToast('Lỗi', response.thongBao || 'Xóa khóa học thất bại.', 'error');
                 }
-            } catch (error) {
-                xuLyLoiAPI(error, "thucHienXoaKhoaHocAPI");
-            }
+            }).withFailureHandler(xuLyLoi).xoaKhoaHoc(maKhoaHoc);
         }
 
-        async function taiDuLieuChoSelectsFormKhoaHoc(resetOptions = false, callback) {
+
+        function taiDuLieuChoSelectsFormKhoaHoc(resetOptions = false, callback) {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                if(callback) callback();
+                return;
+            }
             let loadedCount = 0;
             const totalSelects = 3;
-            const select2Options = { theme: "bootstrap-5", dropdownParent: $('#modalKhoaHoc'), width: '100%' };
-
-            const initOrUpdateSelect2 = (selectId, options) => {
-                const $select = $(`#${selectId}`);
-                if ($select.data('select2')) { $select.select2('destroy').empty(); } // Huy va xoa option cu
-                $select.select2(options); 
-            };
             
-            const populateSelect = async (selectId, placeholder, actionName, valueField, textField, additionalTextFn) => {
-                try {
-                    const response = await fetch(`${API_URL}?action=${actionName}`);
-                    const result = await response.json();
-                    const select = $(`#${selectId}`);
-                    const currentValue = select.val();
-                    select.empty().append(new Option(placeholder, ''));
-                    if (result.success && result.data) {
-                        result.data.forEach(item => {
-                            let text = item[textField];
-                            if (additionalTextFn) text += additionalTextFn(item);
-                            select.append(new Option(text, item[valueField]));
-                        });
-                    }
-                    if (resetOptions || !select.find(`option[value="${currentValue}"]`).length) {
-                        select.val("").trigger('change');
-                    } else {
-                        select.val(currentValue).trigger('change');
-                    }
-                } catch (error) {
-                    xuLyLoiAPI(error, `taiDuLieuChoSelects (${selectId})`);
-                } finally {
-                    loadedCount++;
-                    if (loadedCount === totalSelects) {
-                        initOrUpdateSelect2('maDonViToChucNoiBo', select2Options);
-                        initOrUpdateSelect2('maDonViDaoTaoNgoai', select2Options);
-                        initOrUpdateSelect2('maGiangVienChinh', select2Options);
-                        if (callback) callback();
-                    }
+            const populateSelect = (selectId, placeholder, dataList, valueField, textField, additionalTextFn) => {
+                const select = $(`#${selectId}`);
+                const currentValue = select.val();
+                select.empty().append(new Option(placeholder, ''));
+                if (dataList) {
+                    dataList.forEach(item => {
+                        let text = item[textField];
+                        if (additionalTextFn) {
+                            text += additionalTextFn(item);
+                        }
+                        select.append(new Option(text, item[valueField]));
+                    });
+                }
+                if (resetOptions || !select.find(`option[value="${currentValue}"]`).length) {
+                    select.val("").trigger('change');
+                } else {
+                    select.val(currentValue).trigger('change');
                 }
             };
 
-            populateSelect('maDonViToChucNoiBo', 'Chọn phòng ban', 'layDanhSachPhongBan', 'maPhongBan', 'tenPhongBan');
-            populateSelect('maDonViDaoTaoNgoai', 'Chọn đơn vị đào tạo', 'layDanhSachDonViDaoTao', 'maDonViDaoTao', 'tenDonViDaoTao');
-            populateSelect('maGiangVienChinh', 'Chọn giảng viên', 'layDanhSachGiangVien', 'maGiangVien', 'hoTenGV', item => ` (${item.loaiGiangVien || 'N/A'})`);
+            const checkAllLoaded = () => {
+                loadedCount++;
+                if (loadedCount === totalSelects) {
+                    if (callback) callback();
+                }
+            };
+
+            google.script.run.withSuccessHandler(function(danhSach) {
+                populateSelect('maDonViToChucNoiBo', 'Chọn phòng ban', danhSach, 'maPhongBan', 'tenPhongBan');
+                checkAllLoaded();
+            }).withFailureHandler(xuLyLoi).layDanhSachPhongBan();
+            
+             google.script.run.withSuccessHandler(function(danhSach) {
+                populateSelect('maDonViDaoTaoNgoai', 'Chọn đơn vị đào tạo', danhSach, 'maDonViDaoTao', 'tenDonViDaoTao');
+                checkAllLoaded();
+            }).withFailureHandler(xuLyLoi).layDanhSachDonViDaoTao();
+
+            google.script.run.withSuccessHandler(function(danhSach) {
+                populateSelect('maGiangVienChinh', 'Chọn giảng viên', danhSach, 'maGiangVien', 'hoTenGV', item => ` (${item.loaiGiangVien || 'N/A'})`);
+                checkAllLoaded();
+            }).withFailureHandler(xuLyLoi).layDanhSachGiangVien();
         }
 
         // --- MODULE: DANH MUC PHONG BAN ---
@@ -1071,8 +1273,11 @@
             modalPhongBanInstance.show();
         }
 
-        async function luuPhongBan() {
-            const phongBanData = {
+        function luuPhongBan() {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                hienThiToast('Lỗi', 'Không thể kết nối đến server.', 'error'); return;
+            }
+            const phongBan = {
                 maPhongBan: document.getElementById('maPhongBan').value.trim(),
                 tenPhongBan: document.getElementById('tenPhongBan').value.trim(),
                 maPhongBanCha: $('#maPhongBanCha').val(),
@@ -1081,53 +1286,34 @@
                 moTa: document.getElementById('moTaPhongBan').value.trim()
             };
 
-            if (!phongBanData.tenPhongBan) {
+            if (!phongBan.tenPhongBan) {
                 hienThiToast('Lỗi', 'Tên phòng ban không được để trống.', 'error'); return;
             }
 
-            let payload;
-            if (dangChinhSuaPhongBan) {
-                phongBanData.maPhongBan = document.getElementById('maPhongBanAn').value; 
-                payload = { action: 'capNhatPhongBan', duLieu: phongBanData };
-            } else {
-                payload = { action: 'themPhongBan', duLieu: phongBanData };
-            }
-
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-                const result = await response.json();
-                if (result.success || result.thanhCong) {
-                    hienThiToast('Thành công', result.message || result.thongBao || (dangChinhSuaPhongBan ? "Cập nhật thành công!" : "Thêm mới thành công!"), 'success');
+            const successCallbackLuuPhongBan = function(response) {
+                if (response.thanhCong) {
+                    hienThiToast('Thành công', dangChinhSuaPhongBan ? "Cập nhật phòng ban thành công!" : "Thêm phòng ban mới thành công!", 'success');
                     modalPhongBanInstance.hide();
                     taiDanhSachPhongBan(); 
                     taiDanhSachPhongBanChaChoSelect(true); 
                 } else {
-                    hienThiToast('Lỗi', result.message || result.thongBao || 'Có lỗi xảy ra.', 'error');
+                    hienThiToast('Lỗi', response.thongBao || 'Có lỗi xảy ra từ server.', 'error');
                 }
-            } catch (error) {
-                xuLyLoiAPI(error, "luuPhongBan");
+            };
+            
+            if (dangChinhSuaPhongBan) {
+                phongBan.maPhongBan = document.getElementById('maPhongBanAn').value; 
+                google.script.run.withSuccessHandler(successCallbackLuuPhongBan).withFailureHandler(xuLyLoi).capNhatPhongBan(phongBan);
+            } else {
+                google.script.run.withSuccessHandler(successCallbackLuuPhongBan).withFailureHandler(xuLyLoi).themPhongBan(phongBan);
             }
         }
 
-        async function taiDanhSachPhongBan() {
+        function taiDanhSachPhongBan() {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) return;
             const tbody = document.getElementById('bangDanhSachPhongBan');
             tbody.innerHTML = '<tr><td colspan="5" class="text-center"><div class="spinner-border spinner-border-sm"></div> Đang tải...</td></tr>';
-            try {
-                const response = await fetch(`${API_URL}?action=layDanhSachPhongBanDayDu`);
-                const result = await response.json();
-                if (result.success && result.data) {
-                    hienThiDanhSachPhongBan(result.data);
-                } else {
-                     tbody.innerHTML = `<tr><td colspan="5" class="text-center">${result.message || 'Không tải được dữ liệu.'}</td></tr>`;
-                    hienThiToast('Lỗi', result.message || 'Không tải được danh sách phòng ban.', 'error');
-                }
-            } catch (error) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center">Lỗi khi tải dữ liệu.</td></tr>';
-                xuLyLoiAPI(error, "taiDanhSachPhongBan");
-            }
+            google.script.run.withSuccessHandler(hienThiDanhSachPhongBan).withFailureHandler(xuLyLoi).layDanhSachPhongBanDayDu();
         }
 
         function hienThiDanhSachPhongBan(danhSachPhongBan) {
@@ -1137,7 +1323,10 @@
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center">Không có dữ liệu phòng ban.</td></tr>';
                 return;
             }
-            const phongBanMap = danhSachPhongBan.reduce((map, pb) => { map[pb.maPhongBan] = pb.tenPhongBan; return map; }, {});
+            const phongBanMap = {};
+            danhSachPhongBan.forEach(pb => {
+                phongBanMap[pb.maPhongBan] = pb.tenPhongBan;
+            });
 
             danhSachPhongBan.forEach(pb => {
                 const tr = document.createElement('tr');
@@ -1148,62 +1337,59 @@
                     <td>${tenPhongBanCha}</td>
                     <td>${pb.emailPhongBan || ''}</td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary me-1" onclick='suaPhongBanAPI("${pb.maPhongBan}")' title="Sửa"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-sm btn-outline-danger" onclick='xacNhanXoaPhongBanAPI("${pb.maPhongBan}", "${pb.tenPhongBan}")' title="Xóa"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick='suaPhongBan("${pb.maPhongBan}")' title="Sửa"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick='moModalXacNhanXoaPhongBan("${pb.maPhongBan}", "${pb.tenPhongBan}")' title="Xóa"><i class="fas fa-trash"></i></button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
         
-        async function suaPhongBanAPI(maPhongBan) {
-             try {
-                const response = await fetch(`${API_URL}?action=layChiTietPhongBan&maPhongBan=${encodeURIComponent(maPhongBan)}`);
-                const result = await response.json();
-                if (result.success && result.data) {
-                    moModalSuaPhongBan(result.data);
+        function suaPhongBan(maPhongBan) {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) return;
+            google.script.run.withSuccessHandler(function(phongBanChiTiet) {
+                if (phongBanChiTiet && phongBanChiTiet.maPhongBan) {
+                    moModalSuaPhongBan(phongBanChiTiet);
                 } else {
-                    hienThiToast('Lỗi', result.message || 'Không tìm thấy thông tin phòng ban.', 'error');
+                    hienThiToast('Lỗi', 'Không tìm thấy thông tin phòng ban để sửa.', 'error');
                 }
-            } catch (error) {
-                xuLyLoiAPI(error, "suaPhongBanAPI");
-            }
+            }).withFailureHandler(xuLyLoi).layChiTietPhongBan(maPhongBan);
         }
 
-        function xacNhanXoaPhongBanAPI(maPhongBan, tenPhongBan) {
+        function moModalXacNhanXoaPhongBan(maPhongBan, tenPhongBan) {
             document.getElementById('thongTinXoaModal').textContent = `Phòng ban: ${tenPhongBan} (Mã: ${maPhongBan})`;
             hamXuLyKhiXacNhanXoa = function() {
-                thucHienXoaPhongBanAPI(maPhongBan, tenPhongBan);
+                thucHienXoaPhongBan(maPhongBan, tenPhongBan);
             };
             modalXacNhanXoaInstance.show();
         }
 
-        async function thucHienXoaPhongBanAPI(maPhongBan, tenPhongBan) {
-            const payload = { action: 'xoaPhongBan', maPhongBan: maPhongBan };
-            try {
-                const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-                const result = await response.json();
-                if (result.success || result.thanhCong) {
-                    hienThiToast('Thành công', result.message || result.thongBao || `Đã xóa phòng ban "${tenPhongBan}".`, 'success');
+        function thucHienXoaPhongBan(maPhongBan, tenPhongBan) {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                 hienThiToast('Lỗi', 'Không thể kết nối server để xóa.', 'error'); return;
+            }
+            google.script.run.withSuccessHandler(function(response) {
+                if (response.thanhCong) {
+                    hienThiToast('Thành công', `Đã xóa phòng ban "${tenPhongBan}".`, 'success');
                     taiDanhSachPhongBan();
                     taiDanhSachPhongBanChaChoSelect(true); 
                 } else {
-                    hienThiToast('Lỗi', result.message || result.thongBao || 'Xóa phòng ban thất bại.', 'error');
+                    hienThiToast('Lỗi', response.thongBao || 'Xóa phòng ban thất bại.', 'error');
                 }
-            } catch (error) {
-                xuLyLoiAPI(error, "thucHienXoaPhongBanAPI");
-            }
+            }).withFailureHandler(xuLyLoi).xoaPhongBan(maPhongBan); 
         }
 
-        async function taiDanhSachPhongBanChaChoSelect(resetOptions = false, callback) {
-            try {
-                const response = await fetch(`${API_URL}?action=layDanhSachPhongBan`);
-                const result = await response.json();
+        function taiDanhSachPhongBanChaChoSelect(resetOptions = false, callback) {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                 if(callback) callback();
+                return;
+            }
+            google.script.run.withSuccessHandler(function(danhSach) {
                 const select = $('#maPhongBanCha'); 
                 const currentValue = select.val(); 
                 select.empty().append(new Option('Không có', '')); 
-                if (result.success && result.data) {
-                    result.data.forEach(item => {
+                if (danhSach) {
+                    danhSach.forEach(item => {
                         select.append(new Option(item.tenPhongBan, item.maPhongBan));
                     });
                 }
@@ -1221,14 +1407,10 @@
                 }
 
                 if(callback) callback();
-            } catch (error) {
-                xuLyLoiAPI(error, "taiDanhSachPhongBanChaChoSelect");
-                if(callback) callback();
-            }
+            }).withFailureHandler(xuLyLoi).layDanhSachPhongBan(); 
         }
 
         // --- MODULE: DANH MUC GIANG VIEN ---
-        // (Cac ham cho Giang Vien se duoc cap nhat tuong tu de su dung fetch API)
         function moModalThemGiangVien() {
             dangChinhSuaGiangVien = false;
             currentGiangVienData = null;
@@ -1238,11 +1420,12 @@
             document.getElementById('maGiangVienModal').disabled = false;
             document.getElementById('loaiGiangVien').value = 'Nội bộ'; 
             toggleGiangVienFields(); 
+            $('.select2-giangvien').val(null).trigger('change'); 
             taiDuLieuChoSelectsFormGiangVien(true);
             modalGiangVienInstance.show();
         }
 
-        async function moModalSuaGiangVien(giangVienDuLieu) {
+        function moModalSuaGiangVien(giangVienDuLieu) {
             dangChinhSuaGiangVien = true;
             currentGiangVienData = giangVienDuLieu;
             document.getElementById('formGiangVien').reset();
@@ -1255,9 +1438,7 @@
             document.getElementById('loaiGiangVien').value = giangVienDuLieu.loaiGiangVien;
             toggleGiangVienFields(); 
 
-            await taiDuLieuChoSelectsFormGiangVien(true); // Doi tai xong
-            $('#maNhanVienGV').val(giangVienDuLieu.maNhanVienGV || "").trigger('change');
-            $('#maDonViDaoTaoGV').val(giangVienDuLieu.maDonViDaoTao || "").trigger('change'); 
+            taiDuLieuChoSelectsFormGiangVien(true); 
             
             document.getElementById('chiPhiThueTheoBuoiGV').value = giangVienDuLieu.chiPhiThueTheoBuoi || "";
             document.getElementById('chuyenMonChinhGV').value = giangVienDuLieu.chuyenMonChinh || "";
@@ -1285,7 +1466,11 @@
             }
         }
 
-        async function taiDuLieuChoSelectsFormGiangVien(resetOptions = false, callback){
+        function taiDuLieuChoSelectsFormGiangVien(resetOptions = false, callback){
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                if(callback) callback();
+                return;
+            }
             let loadedCountGV = 0;
             const totalSelectsGV = 2;
             const select2OptionsGV = { theme: "bootstrap-5", dropdownParent: $('#modalGiangVien'), width: '100%' };
@@ -1302,39 +1487,49 @@
                     if (callback) callback();
                 }
             }
-            const populateSelectGV = async (selectId, placeholder, actionName, valueField, textField, additionalTextFn) => {
-                try {
-                    const response = await fetch(`${API_URL}?action=${actionName}`);
-                    const result = await response.json();
-                    const select = $(`#${selectId}`);
-                    const currentValue = select.val();
-                    select.empty().append(new Option(placeholder, ''));
-                    if (result.success && result.data) {
-                        result.data.forEach(item => { 
-                            let text = item[textField];
-                            if(additionalTextFn) text = additionalTextFn(item);
-                            select.append(new Option(text, item[valueField]));
-                        });
-                    }
-                    if (resetOptions || !select.find(`option[value="${currentValue}"]`).length) {
-                        select.val("").trigger('change');
-                    } else {
-                        select.val(currentValue).trigger('change');
-                    }
-                } catch (error) {
-                    xuLyLoiAPI(error, `taiDuLieuSelectsGV (${selectId})`);
-                } finally {
-                    checkAllLoadedGV();
+
+            google.script.run.withSuccessHandler(function(danhSach) {
+                const select = $('#maNhanVienGV');
+                const currentValue = select.val();
+                select.empty().append(new Option('Chọn nhân viên', ''));
+                if (danhSach) {
+                    danhSach.forEach(item => { 
+                        const displayText = `${item.hoTen || 'N/A'} (${item.maNhanVien || 'N/A'})`;
+                        select.append(new Option(displayText, item.maNhanVien));
+                    });
                 }
-            };
-            
-            populateSelectGV('maNhanVienGV', 'Chọn nhân viên', 'layDanhSachNhanVien', 'maNhanVien', 'hoTen', item => ` (${item.maNhanVien || 'N/A'})`);
-            populateSelectGV('maDonViDaoTaoGV', 'Chọn đơn vị đào tạo', 'layDanhSachDonViDaoTao', 'maDonViDaoTao', 'tenDonViDaoTao');
+                if (resetOptions || !select.find(`option[value="${currentValue}"]`).length) {
+                    select.val("").trigger('change');
+                } else {
+                    select.val(currentValue).trigger('change');
+                }
+                checkAllLoadedGV();
+            }).withFailureHandler(xuLyLoi).layDanhSachNhanVien(); 
+
+             google.script.run.withSuccessHandler(function(danhSach) {
+                const select = $('#maDonViDaoTaoGV');
+                const currentValue = select.val();
+                select.empty().append(new Option('Chọn đơn vị đào tạo', ''));
+                if (danhSach) {
+                    danhSach.forEach(item => { 
+                        select.append(new Option(item.tenDonViDaoTao, item.maDonViDaoTao));
+                    });
+                }
+                if (resetOptions || !select.find(`option[value="${currentValue}"]`).length) {
+                    select.val("").trigger('change');
+                } else {
+                    select.val(currentValue).trigger('change');
+                }
+                checkAllLoadedGV();
+            }).withFailureHandler(xuLyLoi).layDanhSachDonViDaoTao();
         }
 
 
-        async function luuGiangVien() {
-            const giangVienData = {
+        function luuGiangVien() {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                hienThiToast('Lỗi', 'Không thể kết nối đến server.', 'error'); return;
+            }
+            const giangVien = {
                 maGiangVien: document.getElementById('maGiangVienModal').value.trim(),
                 hoTenGV: document.getElementById('hoTenGV').value.trim(),
                 loaiGiangVien: document.getElementById('loaiGiangVien').value,
@@ -1350,58 +1545,44 @@
                 ghiChu: document.getElementById('ghiChuGV').value.trim()
             };
 
-            if (!giangVienData.hoTenGV) {
+            if (!giangVien.hoTenGV) {
                 hienThiToast('Lỗi', 'Họ tên giảng viên không được để trống.', 'error'); return;
             }
-            if (!giangVienData.loaiGiangVien) {
+            if (!giangVien.loaiGiangVien) {
                 hienThiToast('Lỗi', 'Vui lòng chọn loại giảng viên.', 'error'); return;
             }
             
-            if (giangVienData.loaiGiangVien === 'Thuê ngoài') {
-                giangVienData.maNhanVienGV = ""; 
+            if (giangVien.loaiGiangVien === 'Thuê ngoài') {
+                giangVien.maNhanVienGV = ""; 
             } else {
-                giangVienData.maDonViDaoTao = ""; 
-                giangVienData.chiPhiThueTheoBuoi = "";
+                giangVien.maDonViDaoTao = ""; 
+                giangVien.chiPhiThueTheoBuoi = "";
             }
 
-            let payload;
-            if (dangChinhSuaGiangVien) {
-                giangVienData.maGiangVien = document.getElementById('maGiangVienAn').value; 
-                payload = { action: 'capNhatGiangVien', duLieu: giangVienData };
-            } else {
-                payload = { action: 'themGiangVien', duLieu: giangVienData };
-            }
-             try {
-                const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-                const result = await response.json();
-                if (result.success || result.thanhCong) {
-                    hienThiToast('Thành công', result.message || result.thongBao || (dangChinhSuaGiangVien ? "Cập nhật thành công!" : "Thêm mới thành công!"), 'success');
+
+            const successCallback = function(response) {
+                if (response.thanhCong) {
+                    hienThiToast('Thành công', dangChinhSuaGiangVien ? "Cập nhật giảng viên thành công!" : "Thêm giảng viên mới thành công!", 'success');
                     modalGiangVienInstance.hide();
                     taiDanhSachGiangVien(); 
                 } else {
-                    hienThiToast('Lỗi', result.message || result.thongBao || 'Có lỗi xảy ra.', 'error');
+                    hienThiToast('Lỗi', response.thongBao || 'Có lỗi xảy ra từ server.', 'error');
                 }
-            } catch (error) {
-                xuLyLoiAPI(error, "luuGiangVien");
+            };
+
+            if (dangChinhSuaGiangVien) {
+                giangVien.maGiangVien = document.getElementById('maGiangVienAn').value; 
+                google.script.run.withSuccessHandler(successCallback).withFailureHandler(xuLyLoi).capNhatGiangVien(giangVien);
+            } else {
+                google.script.run.withSuccessHandler(successCallback).withFailureHandler(xuLyLoi).themGiangVien(giangVien);
             }
         }
 
-        async function taiDanhSachGiangVien() {
+        function taiDanhSachGiangVien() {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) return;
             const tbody = document.getElementById('bangDanhSachGiangVien');
             tbody.innerHTML = '<tr><td colspan="7" class="text-center"><div class="spinner-border spinner-border-sm"></div> Đang tải...</td></tr>';
-            try {
-                const response = await fetch(`${API_URL}?action=layDanhSachGiangVienDayDu`);
-                const result = await response.json();
-                if (result.success && result.data) {
-                    hienThiDanhSachGiangVien(result.data);
-                } else {
-                    tbody.innerHTML = `<tr><td colspan="7" class="text-center">${result.message || 'Không tải được dữ liệu.'}</td></tr>`;
-                    hienThiToast('Lỗi', result.message || 'Không tải được danh sách giảng viên.', 'error');
-                }
-            } catch (error) {
-                 tbody.innerHTML = '<tr><td colspan="7" class="text-center">Lỗi khi tải dữ liệu.</td></tr>';
-                xuLyLoiAPI(error, "taiDanhSachGiangVien");
-            }
+            google.script.run.withSuccessHandler(hienThiDanhSachGiangVien).withFailureHandler(xuLyLoi).layDanhSachGiangVienDayDu();
         }
 
         function hienThiDanhSachGiangVien(danhSachGV) {
@@ -1428,50 +1609,45 @@
                     <td>${gv.emailGV || ''}</td>
                     <td>${donViDisplay}</td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary me-1" onclick='suaGiangVienAPI("${gv.maGiangVien}")' title="Sửa"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-sm btn-outline-danger" onclick='xacNhanXoaGiangVienAPI("${gv.maGiangVien}", "${gv.hoTenGV}")' title="Xóa"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick='suaGiangVien("${gv.maGiangVien}")' title="Sửa"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick='moModalXacNhanXoaGiangVien("${gv.maGiangVien}", "${gv.hoTenGV}")' title="Xóa"><i class="fas fa-trash"></i></button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        async function suaGiangVienAPI(maGiangVien) {
-            try {
-                const response = await fetch(`${API_URL}?action=layChiTietGiangVien&maGiangVien=${encodeURIComponent(maGiangVien)}`);
-                const result = await response.json();
-                if (result.success && result.data) {
-                    moModalSuaGiangVien(result.data);
+        function suaGiangVien(maGiangVien) {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) return;
+            google.script.run.withSuccessHandler(function(giangVienChiTiet) {
+                if (giangVienChiTiet && giangVienChiTiet.maGiangVien) {
+                    moModalSuaGiangVien(giangVienChiTiet);
                 } else {
-                    hienThiToast('Lỗi', result.message || 'Không tìm thấy thông tin giảng viên.', 'error');
+                    hienThiToast('Lỗi', 'Không tìm thấy thông tin giảng viên để sửa.', 'error');
                 }
-            } catch (error) {
-                xuLyLoiAPI(error, "suaGiangVienAPI");
-            }
+            }).withFailureHandler(xuLyLoi).layChiTietGiangVien(maGiangVien);
         }
 
-        function xacNhanXoaGiangVienAPI(maGiangVien, hoTenGV) {
+        function moModalXacNhanXoaGiangVien(maGiangVien, hoTenGV) {
             document.getElementById('thongTinXoaModal').textContent = `Giảng viên: ${hoTenGV} (Mã: ${maGiangVien})`;
             hamXuLyKhiXacNhanXoa = function() {
-                thucHienXoaGiangVienAPI(maGiangVien, hoTenGV);
+                thucHienXoaGiangVien(maGiangVien, hoTenGV);
             };
             modalXacNhanXoaInstance.show();
         }
 
-        async function thucHienXoaGiangVienAPI(maGiangVien, hoTenGV) {
-            const payload = { action: 'xoaGiangVien', maGiangVien: maGiangVien };
-            try {
-                const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-                const result = await response.json();
-                if (result.success || result.thanhCong) {
-                    hienThiToast('Thành công', result.message || result.thongBao || `Đã xóa giảng viên "${hoTenGV}".`, 'success');
+        function thucHienXoaGiangVien(maGiangVien, hoTenGV) {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                 hienThiToast('Lỗi', 'Không thể kết nối server để xóa.', 'error'); return;
+            }
+            google.script.run.withSuccessHandler(function(response) {
+                if (response.thanhCong) {
+                    hienThiToast('Thành công', `Đã xóa giảng viên "${hoTenGV}".`, 'success');
                     taiDanhSachGiangVien();
                 } else {
-                    hienThiToast('Lỗi', result.message || result.thongBao || 'Xóa giảng viên thất bại.', 'error');
+                    hienThiToast('Lỗi', response.thongBao || 'Xóa giảng viên thất bại.', 'error');
                 }
-            } catch (error) {
-                xuLyLoiAPI(error, "thucHienXoaGiangVienAPI");
-            }
+            }).withFailureHandler(xuLyLoi).xoaGiangVien(maGiangVien);
         }
 
         // --- MODULE: DANH MUC DON VI DAO TAO ---
@@ -1485,7 +1661,7 @@
             modalDonViDaoTaoInstance.show();
         }
 
-        async function moModalSuaDonViDaoTao(dvdtDuLieu) {
+        function moModalSuaDonViDaoTao(dvdtDuLieu) {
             dangChinhSuaDonViDaoTao = true;
             currentDonViDaoTaoData = dvdtDuLieu;
             document.getElementById('formDonViDaoTao').reset();
@@ -1507,8 +1683,11 @@
             modalDonViDaoTaoInstance.show();
         }
 
-        async function luuDonViDaoTao() {
-            const donViDaoTaoData = {
+        function luuDonViDaoTao() {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                hienThiToast('Lỗi', 'Không thể kết nối đến server.', 'error'); return;
+            }
+            const donViDaoTao = {
                 maDonViDaoTao: document.getElementById('maDonViDaoTaoModal').value.trim(),
                 tenDonViDaoTao: document.getElementById('tenDonViDaoTaoModal').value.trim(),
                 diaChi: document.getElementById('diaChiDVDT').value.trim(),
@@ -1521,51 +1700,38 @@
                 ghiChu: document.getElementById('ghiChuDVDT').value.trim()
             };
 
-            if (!donViDaoTaoData.tenDonViDaoTao) {
+            if (!donViDaoTao.tenDonViDaoTao) {
                 hienThiToast('Lỗi', 'Tên đơn vị đào tạo không được để trống.', 'error'); return;
             }
 
-            let payload;
-            if (dangChinhSuaDonViDaoTao) {
-                donViDaoTaoData.maDonViDaoTao = document.getElementById('maDonViDaoTaoAn').value; 
-                payload = { action: 'capNhatDonViDaoTao', duLieu: donViDaoTaoData };
-            } else {
-                payload = { action: 'themDonViDaoTao', duLieu: donViDaoTaoData };
-            }
-             try {
-                const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-                const result = await response.json();
-                if (result.success || result.thanhCong) {
-                    hienThiToast('Thành công', result.message || result.thongBao || (dangChinhSuaDonViDaoTao ? "Cập nhật thành công!" : "Thêm mới thành công!"), 'success');
+            const successCallback = function(response) {
+                if (response.thanhCong) {
+                    hienThiToast('Thành công', dangChinhSuaDonViDaoTao ? "Cập nhật đơn vị đào tạo thành công!" : "Thêm đơn vị đào tạo mới thành công!", 'success');
                     modalDonViDaoTaoInstance.hide();
                     taiDanhSachDonViDaoTao(); 
                 } else {
-                    hienThiToast('Lỗi', result.message || result.thongBao || 'Có lỗi xảy ra.', 'error');
+                    hienThiToast('Lỗi', response.thongBao || 'Có lỗi xảy ra từ server.', 'error');
                 }
-            } catch (error) {
-                xuLyLoiAPI(error, "luuDonViDaoTao");
+            };
+
+            if (dangChinhSuaDonViDaoTao) {
+                donViDaoTao.maDonViDaoTao = document.getElementById('maDonViDaoTaoAn').value; 
+                google.script.run.withSuccessHandler(successCallback).withFailureHandler(xuLyLoi).capNhatDonViDaoTao(donViDaoTao);
+            } else {
+                google.script.run.withSuccessHandler(successCallback).withFailureHandler(xuLyLoi).themDonViDaoTao(donViDaoTao);
             }
         }
 
-        async function taiDanhSachDonViDaoTao() {
+        function taiDanhSachDonViDaoTao() {
+            console.log("taiDanhSachDonViDaoTao duoc goi"); 
+            if (typeof google === 'undefined' || !google.script || !google.script.run) return;
             const tbody = document.getElementById('bangDanhSachDonViDaoTao');
             tbody.innerHTML = '<tr><td colspan="6" class="text-center"><div class="spinner-border spinner-border-sm"></div> Đang tải...</td></tr>';
-            try {
-                const response = await fetch(`${API_URL}?action=layDanhSachDonViDaoTaoDayDu`); // GOI DUNG TEN HAM
-                const result = await response.json();
-                if (result.success && result.data) {
-                    hienThiDanhSachDonViDaoTao(result.data);
-                } else {
-                    tbody.innerHTML = `<tr><td colspan="6" class="text-center">${result.message || 'Không tải được dữ liệu.'}</td></tr>`;
-                    hienThiToast('Lỗi', result.message || 'Không tải được danh sách đơn vị đào tạo.', 'error');
-                }
-            } catch (error) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center">Lỗi khi tải dữ liệu.</td></tr>';
-                xuLyLoiAPI(error, "taiDanhSachDonViDaoTao");
-            }
+            google.script.run.withSuccessHandler(hienThiDanhSachDonViDaoTao).withFailureHandler(xuLyLoi).layDanhSachDonViDaoTaoFull(); 
         }
 
         function hienThiDanhSachDonViDaoTao(danhSachDVDT) {
+            console.log("hienThiDanhSachDonViDaoTao voi du lieu:", danhSachDVDT); 
             const tbody = document.getElementById('bangDanhSachDonViDaoTao');
             tbody.innerHTML = '';
             if (!danhSachDVDT || danhSachDVDT.length === 0) {
@@ -1581,102 +1747,210 @@
                     <td>${dv.website || ''}</td>
                     <td>${dv.linhVucDaoTaoChinh || ''}</td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary me-1" onclick='suaDonViDaoTaoAPI("${dv.maDonViDaoTao}")' title="Sửa"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-sm btn-outline-danger" onclick='xacNhanXoaDonViDaoTaoAPI("${dv.maDonViDaoTao}", "${dv.tenDonViDaoTao}")' title="Xóa"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick='suaDonViDaoTao("${dv.maDonViDaoTao}")' title="Sửa"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick='moModalXacNhanXoaDonViDaoTao("${dv.maDonViDaoTao}", "${dv.tenDonViDaoTao}")' title="Xóa"><i class="fas fa-trash"></i></button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        async function suaDonViDaoTaoAPI(maDonViDaoTao) {
-            try {
-                const response = await fetch(`${API_URL}?action=layChiTietDonViDaoTao&maDonViDaoTao=${encodeURIComponent(maDonViDaoTao)}`);
-                const result = await response.json();
-                if (result.success && result.data) {
-                    moModalSuaDonViDaoTao(result.data);
+        function suaDonViDaoTao(maDonViDaoTao) {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) return;
+            google.script.run.withSuccessHandler(function(dvdtChiTiet) {
+                if (dvdtChiTiet && dvdtChiTiet.maDonViDaoTao) {
+                    moModalSuaDonViDaoTao(dvdtChiTiet);
                 } else {
-                    hienThiToast('Lỗi', result.message || 'Không tìm thấy thông tin đơn vị đào tạo.', 'error');
+                    hienThiToast('Lỗi', 'Không tìm thấy thông tin đơn vị đào tạo để sửa.', 'error');
                 }
-            } catch (error) {
-                xuLyLoiAPI(error, "suaDonViDaoTaoAPI");
-            }
+            }).withFailureHandler(xuLyLoi).layChiTietDonViDaoTao(maDonViDaoTao);
         }
 
-        function xacNhanXoaDonViDaoTaoAPI(maDonViDaoTao, tenDonViDaoTao) {
+        function moModalXacNhanXoaDonViDaoTao(maDonViDaoTao, tenDonViDaoTao) {
             document.getElementById('thongTinXoaModal').textContent = `Đơn vị đào tạo: ${tenDonViDaoTao} (Mã: ${maDonViDaoTao})`;
             hamXuLyKhiXacNhanXoa = function() {
-                thucHienXoaDonViDaoTaoAPI(maDonViDaoTao, tenDonViDaoTao);
+                thucHienXoaDonViDaoTao(maDonViDaoTao, tenDonViDaoTao);
             };
             modalXacNhanXoaInstance.show();
         }
 
-        async function thucHienXoaDonViDaoTaoAPI(maDonViDaoTao, tenDonViDaoTao) {
-             const payload = { action: 'xoaDonViDaoTao', maDonViDaoTao: maDonViDaoTao };
-            try {
-                const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-                const result = await response.json();
-                if (result.success || result.thanhCong) {
-                    hienThiToast('Thành công', result.message || result.thongBao || `Đã xóa đơn vị đào tạo "${tenDonViDaoTao}".`, 'success');
+        function thucHienXoaDonViDaoTao(maDonViDaoTao, tenDonViDaoTao) {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                 hienThiToast('Lỗi', 'Không thể kết nối server để xóa.', 'error'); return;
+            }
+            google.script.run.withSuccessHandler(function(response) {
+                if (response.thanhCong) {
+                    hienThiToast('Thành công', `Đã xóa đơn vị đào tạo "${tenDonViDaoTao}".`, 'success');
                     taiDanhSachDonViDaoTao();
                 } else {
-                    hienThiToast('Lỗi', result.message || result.thongBao || 'Xóa đơn vị đào tạo thất bại.', 'error');
+                    hienThiToast('Lỗi', response.thongBao || 'Xóa đơn vị đào tạo thất bại.', 'error');
                 }
-            } catch (error) {
-                xuLyLoiAPI(error, "thucHienXoaDonViDaoTaoAPI");
-            }
+            }).withFailureHandler(xuLyLoi).xoaDonViDaoTao(maDonViDaoTao);
         }
 
 
-        // --- MODULE: CHON NHAN VIEN DAO TAO (Se can cap nhat de dung API) ---
-        // Cac ham nhu taiKhoaHocVaoSelectChonNhanVien, taiPhongBanVaoFilterChonNhanVien, 
-        // taiDanhSachNhanVienCoTheChon, luuDanhSachHocVienDaChon se can goi API
-        // Vi du:
-        async function taiKhoaHocVaoSelectChonNhanVien() {
+        // --- MODULE: CHON NHAN VIEN DAO TAO ---
+        function taiKhoaHocVaoSelectChonNhanVien() {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) return;
             const selectKhoaHoc = document.getElementById('selectKhoaHocChoNhanVien');
             selectKhoaHoc.innerHTML = '<option value="">Đang tải khóa học...</option>';
-            try {
-                const response = await fetch(`${API_URL}?action=layDanhSachKhoaHoc`);
-                const result = await response.json();
+             google.script.run.withSuccessHandler(function(danhSachKhoaHoc) {
                 selectKhoaHoc.innerHTML = '<option value="">Vui lòng chọn khóa học...</option>';
-                if (result.success && result.data && result.data.length > 0) {
-                    result.data.forEach(kh => {
+                if (danhSachKhoaHoc && danhSachKhoaHoc.length > 0) {
+                    danhSachKhoaHoc.forEach(kh => {
                         selectKhoaHoc.innerHTML += `<option value="${kh.maKhoaHoc}">${kh.tenKhoaHoc} (Mã: ${kh.maKhoaHoc})</option>`;
                     });
                 } else {
                      selectKhoaHoc.innerHTML = '<option value="">Không có khóa học nào.</option>';
                 }
-            } catch (error) {
-                xuLyLoiAPI(error, "taiKhoaHocVaoSelectChonNhanVien");
-                selectKhoaHoc.innerHTML = '<option value="">Lỗi tải khóa học</option>';
+            }).withFailureHandler(xuLyLoi).layDanhSachKhoaHoc();
+        }
+        function taiPhongBanVaoFilterChonNhanVien() {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) return;
+            const selectPhongBan = document.getElementById('filterPhongBan');
+            selectPhongBan.innerHTML = '<option value="">Đang tải phòng ban...</option>';
+            google.script.run.withSuccessHandler(function(danhSachPhongBan) {
+                selectPhongBan.innerHTML = '<option value="">Tất cả phòng ban</option>';
+                if (danhSachPhongBan) {
+                    danhSachPhongBan.forEach(pb => {
+                        selectPhongBan.innerHTML += `<option value="${pb.maPhongBan}">${pb.tenPhongBan}</option>`;
+                    });
+                }
+            }).withFailureHandler(xuLyLoi).layDanhSachPhongBan();
+        }
+        function taiDanhSachNhanVienCoTheChon() {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                 hienThiToast('Lỗi', 'Không thể kết nối server để lọc nhân viên.', 'error');
+                return;
+            }
+            const maKhoaHocDaChon = document.getElementById('selectKhoaHocChoNhanVien').value;
+            if (!maKhoaHocDaChon) {
+                hienThiToast('Thông báo', 'Vui lòng chọn một khóa học trước khi lọc nhân viên.', 'info');
+                document.getElementById('bangDanhSachNhanVienDeChon').innerHTML = '<tr><td colspan="5" class="text-center">Vui lòng chọn khóa học.</td></tr>';
+                return;
+            }
+            const boLoc = {
+                maPhongBan: document.getElementById('filterPhongBan').value,
+                chucDanh: document.getElementById('filterChucDanh').value.trim(),
+                namCongTac: document.getElementById('filterNamCongTac').value
+            };
+            const tbody = document.getElementById('bangDanhSachNhanVienDeChon');
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center"><div class="spinner-border spinner-border-sm"></div> Đang tải nhân viên...</td></tr>';
+            google.script.run.withSuccessHandler(hienThiDanhSachNhanVienDeChon).withFailureHandler(xuLyLoi).layDanhSachNhanVienCoBoLoc(maKhoaHocDaChon, boLoc);
+        }
+
+        function hienThiDanhSachNhanVienDeChon(danhSachNhanVien) {
+            const tbody = document.getElementById('bangDanhSachNhanVienDeChon');
+            tbody.innerHTML = '';
+            document.getElementById('chonTatCaNhanVien').checked = false;
+            if (!danhSachNhanVien || danhSachNhanVien.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">Không tìm thấy nhân viên nào phù hợp với bộ lọc.</td></tr>';
+                return;
+            }
+            danhSachNhanVien.forEach(nv => {
+                const daChon = danhSachNhanVienDaChonTamThoi.some(selectedNv => selectedNv.maNhanVien === nv.maNhanVien);
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><input type="checkbox" class="form-check-input checkbox-nhan-vien" value="${nv.maNhanVien}" data-ten="${nv.hoTen}" ${daChon ? 'checked' : ''} onchange="xuLyChonMotNhanVien(this)"></td>
+                    <td>${nv.maNhanVien || ''}</td>
+                    <td>${nv.hoTen || ''}</td>
+                    <td>${nv.tenPhongBan || nv.maPhongBan || ''}</td>
+                    <td>${nv.chucDanh || ''}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        
+        function xuLyChonTatCaNhanVien(trangThaiChecked) {
+            const checkboxes = document.querySelectorAll('#bangDanhSachNhanVienDeChon .checkbox-nhan-vien');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = trangThaiChecked;
+                xuLyChonMotNhanVien(checkbox);
+            });
+        }
+
+        function xuLyChonMotNhanVien(checkboxElement) {
+            const maNhanVien = checkboxElement.value;
+            const tenNhanVien = checkboxElement.dataset.ten;
+            if (checkboxElement.checked) {
+                if (!danhSachNhanVienDaChonTamThoi.some(nv => nv.maNhanVien === maNhanVien)) {
+                    danhSachNhanVienDaChonTamThoi.push({ maNhanVien: maNhanVien, hoTen: tenNhanVien });
+                }
+            } else {
+                danhSachNhanVienDaChonTamThoi = danhSachNhanVienDaChonTamThoi.filter(nv => nv.maNhanVien !== maNhanVien);
+            }
+            capNhatDanhSachNhanVienDaChonUI();
+        }
+
+        function capNhatDanhSachNhanVienDaChonUI() {
+            const ul = document.getElementById('listNhanVienDaChon');
+            ul.innerHTML = '';
+            danhSachNhanVienDaChonTamThoi.forEach(nv => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item list-group-item-sm d-flex justify-content-between align-items-center';
+                li.textContent = `${nv.hoTen} (Mã: ${nv.maNhanVien})`;
+                const btnXoa = document.createElement('button');
+                btnXoa.className = 'btn btn-xs btn-outline-danger py-0 px-1';
+                btnXoa.innerHTML = '<i class="fas fa-times fa-xs"></i>';
+                btnXoa.onclick = function() { boChonNhanVienTuDanhSach(nv.maNhanVien); };
+                li.appendChild(btnXoa);
+                ul.appendChild(li);
+            });
+            document.getElementById('soLuongNhanVienDaChon').textContent = danhSachNhanVienDaChonTamThoi.length;
+        }
+
+        function boChonNhanVienTuDanhSach(maNhanVien) {
+            danhSachNhanVienDaChonTamThoi = danhSachNhanVienDaChonTamThoi.filter(nv => nv.maNhanVien !== maNhanVien);
+            capNhatDanhSachNhanVienDaChonUI();
+            const checkboxTrongBang = document.querySelector(`#bangDanhSachNhanVienDeChon .checkbox-nhan-vien[value="${maNhanVien}"]`);
+            if (checkboxTrongBang) {
+                checkboxTrongBang.checked = false;
             }
         }
-        // ... cac ham khac cua module nay can duoc cap nhat tuong tu ...
-        function taiDanhSachNhanVienCoTheChon() { hienThiToast("Thông báo", "Chức năng đang được cập nhật để dùng API.", "info");}
-        function hienThiDanhSachNhanVienDeChon(danhSachNhanVien) {}
-        function xuLyChonTatCaNhanVien(trangThaiChecked) {}
-        function xuLyChonMotNhanVien(checkboxElement) {}
-        function capNhatDanhSachNhanVienDaChonUI() {}
-        function boChonNhanVienTuDanhSach(maNhanVien) {}
-        function luuDanhSachHocVienDaChon() { hienThiToast("Thông báo", "Chức năng đang được cập nhật để dùng API.", "info");}
-        function xuatDanhSachHocVien() {}
-        function taiPhongBanVaoFilterChonNhanVien() {
-             const selectPhongBan = document.getElementById('filterPhongBan');
-            selectPhongBan.innerHTML = '<option value="">Đang tải phòng ban...</option>';
-            fetch(`${API_URL}?action=layDanhSachPhongBan`)
-                .then(response => response.json())
-                .then(result => {
-                    selectPhongBan.innerHTML = '<option value="">Tất cả phòng ban</option>';
-                    if (result.success && result.data) {
-                        result.data.forEach(pb => {
-                            selectPhongBan.innerHTML += `<option value="${pb.maPhongBan}">${pb.tenPhongBan}</option>`;
-                        });
+
+        function luuDanhSachHocVienDaChon() {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                hienThiToast('Lỗi', 'Không thể kết nối server.', 'error');
+                return;
+            }
+            const maKhoaHocDaChon = document.getElementById('selectKhoaHocChoNhanVien').value;
+            if (!maKhoaHocDaChon) {
+                hienThiToast('Lỗi', 'Vui lòng chọn khóa học.', 'error');
+                return;
+            }
+            if (danhSachNhanVienDaChonTamThoi.length === 0) {
+                hienThiToast('Thông báo', 'Chưa có nhân viên nào được chọn.', 'info');
+                return;
+            }
+            const danhSachMaNhanVien = danhSachNhanVienDaChonTamThoi.map(nv => nv.maNhanVien);
+            hienThiToast('Thông báo', 'Đang lưu danh sách học viên...', 'info');
+            google.script.run
+                .withSuccessHandler(function(response) {
+                    if (response.thanhCong) {
+                        hienThiToast('Thành công', response.thongBao || 'Lưu danh sách học viên thành công!', 'success');
+                        danhSachNhanVienDaChonTamThoi = [];
+                        capNhatDanhSachNhanVienDaChonUI();
+                        taiDanhSachNhanVienCoTheChon(); 
+                    } else {
+                        hienThiToast('Lỗi', response.thongBao || 'Lưu danh sách thất bại.', 'error');
                     }
                 })
-                .catch(error => xuLyLoiAPI(error, "taiPhongBanVaoFilterChonNhanVien"));
+                .withFailureHandler(xuLyLoi)
+                .luuDanhSachHocVienChoKhoaHoc(maKhoaHocDaChon, danhSachMaNhanVien);
         }
 
-
+        function xuatDanhSachHocVien() {
+            if (danhSachNhanVienDaChonTamThoi.length > 0) {
+                let danhSachText = "Danh sách nhân viên đã chọn:\n";
+                danhSachNhanVienDaChonTamThoi.forEach(nv => {
+                    danhSachText += `- ${nv.hoTen} (Mã: ${nv.maNhanVien})\n`;
+                });
+                console.log(danhSachText);
+                hienThiToast('Thông tin', 'Xem danh sách đã chọn trong Console (F12). Chức năng xuất/in sẽ được phát triển sau.', 'info');
+            } else {
+                hienThiToast('Thông báo', 'Chưa có nhân viên nào được chọn để xuất.', 'info');
+            }
+        }
     </script>
 </body>
 </html>
