@@ -1,0 +1,1957 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ứng dụng Quản lý Đào tạo Nội bộ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8f9fa; 
+            padding-top: 56px; 
+        }
+        .navbar {
+            background-color: #ffffff; 
+            box-shadow: 0 2px 4px rgba(0,0,0,.1); 
+        }
+        .navbar .nav-link {
+            color: #343a40 !important; 
+            font-weight: 500;
+            padding-left: 0.8rem !important;
+            padding-right: 0.8rem !important;
+        }
+        .navbar .nav-link.active, .navbar .nav-link:hover {
+            color: #007bff !important; 
+        }
+
+        .sidebar {
+            height: calc(100vh - 56px); 
+            position: fixed;
+            top: 56px; 
+            left: 0;
+            width: 250px; 
+            background-color: #343a40; 
+            color: #ffffff; 
+            z-index: 100; 
+            transition: all 0.3s;
+            overflow-y: auto; 
+            padding-top: 1rem; 
+        }
+        .sidebar .nav-link {
+            color: #adb5bd; 
+            padding: 10px 15px;
+            border-radius: 0.25rem; 
+            margin-bottom: 5px; 
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active-sidebar { 
+            color: #ffffff; 
+            background-color: #495057; 
+        }
+        .sidebar .nav-link .fa-fw {
+            margin-right: 8px; 
+        }
+        .content-wrapper {
+            margin-left: 250px; 
+            padding-top: 20px; 
+            padding-bottom: 20px;
+            transition: margin-left 0.3s;
+        }
+        .page-title {
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+        .card {
+            border-radius: 0.5rem; 
+            box-shadow: 0 2px 10px rgba(0,0,0,.075); 
+        }
+        .table th {
+            background-color: #e9ecef; 
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        
+        @media (max-width: 992px) {
+            .sidebar {
+                left: -250px; 
+                top: 0; 
+                padding-top: 56px; 
+                height: 100vh;
+            }
+            .sidebar.active {
+                left: 0; 
+            }
+            .content-wrapper {
+                margin-left: 0; 
+            }
+        }
+        .sidebar-toggler {
+        }
+        .employee-list-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .ma-khoa-hoc-rut-gon {
+            display: inline-block;
+            max-width: 120px; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            vertical-align: bottom; 
+        }
+        .ten-khoa-hoc-tooltip { 
+            cursor: help; 
+        }
+        .modal-body .form-label {
+            font-weight: 500; 
+        }
+        .modal-body hr {
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .modal-body h6 { 
+            color: #007bff;
+            margin-bottom: 1rem;
+            margin-top: 0.5rem;
+            font-weight: 600;
+        }
+         /* Select2 custom styling if needed */
+        .select2-container--bootstrap-5 .select2-selection--single {
+            height: calc(1.5em + .75rem + 2px); /* Match Bootstrap form-control height */
+            padding: .375rem .75rem;
+            display: flex; 
+            align-items: center; 
+        }
+        .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+            line-height: 1.5;
+        }
+        .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow {
+            height: calc(1.5em + .75rem); 
+            position: absolute;
+            top: 50%;
+            right: .75rem;
+            transform: translateY(-50%);
+        }
+        .select2-dropdown { 
+            z-index: 1061 !important; /* Tang z-index de hien thi tren modal */
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container-fluid">
+            <button class="navbar-toggler me-2" type="button" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a class="navbar-brand" href="#" onclick="hienThiTrang('trangTongQuan')">
+                <i class="fas fa-graduation-cap me-2"></i> Quản lý Đào tạo
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="hienThiTrang('trangTongQuan')">Tổng quan</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="hienThiTrang('trangKeHoachDaoTao')">Kế hoạch</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="hienThiTrang('trangYeuCauDaoTao')">Yêu cầu</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="hienThiTrang('trangChonNhanVienDaoTao')">Chọn Nhân viên</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle me-1"></i> <span id="tenNguoiDung">Người dùng</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
+                            <li><a class="dropdown-item" href="#">Thông tin cá nhân</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="xuLyDangXuat()">Đăng xuất</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="sidebar" id="appSidebar">
+        <nav class="nav flex-column p-3">
+            <a class="nav-link" href="#" onclick="hienThiTrang('trangTheoDoiKetQua')"><i class="fas fa-tasks fa-fw"></i> Theo dõi Kết quả</a>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="collapse" href="#collapseDanhMuc" role="button" aria-expanded="false" aria-controls="collapseDanhMuc">
+                    <i class="fas fa-cogs fa-fw"></i> Quản lý Danh mục
+                </a>
+                <div class="collapse" id="collapseDanhMuc">
+                    <ul class="nav flex-column ps-3">
+                        <li class="nav-item"><a class="nav-link" href="#" onclick="hienThiTrang('trangDanhMucKhoaHoc')"><i class="fas fa-book fa-fw"></i> Khóa đào tạo</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#" onclick="hienThiTrang('trangDanhMucNhanVien')"><i class="fas fa-users fa-fw"></i> Nhân viên</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#" onclick="hienThiTrang('trangDanhMucPhongBan')"><i class="fas fa-building fa-fw"></i> Phòng ban</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#" onclick="hienThiTrang('trangDanhMucChucDanh')"><i class="fas fa-id-badge fa-fw"></i> Chức danh</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#" onclick="hienThiTrang('trangDanhMucNguoiPheDuyet')"><i class="fas fa-user-check fa-fw"></i> Người phê duyệt</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#" onclick="hienThiTrang('trangDanhMucGiangVien')"><i class="fas fa-chalkboard-teacher fa-fw"></i> Giảng viên</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#" onclick="hienThiTrang('trangDanhMucDonViDaoTao')"><i class="fas fa-school fa-fw"></i> Đơn vị đào tạo</a></li>
+                    </ul>
+                </div>
+            </li>
+            <a class="nav-link" href="#" onclick="hienThiTrang('trangBaoCao')"><i class="fas fa-chart-bar fa-fw"></i> Báo cáo & Thống kê</a>
+        </nav>
+    </div>
+
+    <div class="content-wrapper" id="mainContent">
+        <div class="container-fluid">
+            <div id="trangTongQuan" class="page-content">
+                <h2 class="page-title">Tổng quan</h2>
+                <p>Chào mừng bạn đến với Hệ thống Quản lý Đào tạo Nội bộ.</p>
+            </div>
+
+            <div id="trangDanhMucKhoaHoc" class="page-content" style="display: none;">
+                <h2 class="page-title">Quản lý Danh mục Khóa Đào tạo</h2>
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Danh sách Khóa đào tạo</span>
+                        <button class="btn btn-primary btn-sm" onclick="moModalThemKhoaHoc()">
+                            <i class="fas fa-plus me-1"></i> Thêm Khóa học
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Mã Khóa</th>
+                                        <th>Tên Khóa học</th>
+                                        <th>Thời lượng</th>
+                                        <th>Hình thức</th>
+                                        <th>Chi phí (dự kiến)</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bangDanhSachKhoaHoc"></tbody>
+                            </table>
+                        </div>
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center" id="phanTrangKhoaHoc"></ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="trangDanhMucPhongBan" class="page-content" style="display: none;">
+                <h2 class="page-title">Quản lý Danh mục Phòng Ban</h2>
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Danh sách Phòng Ban</span>
+                        <button class="btn btn-primary btn-sm" onclick="moModalThemPhongBan()">
+                            <i class="fas fa-plus me-1"></i> Thêm Phòng Ban
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Mã Phòng Ban</th>
+                                        <th>Tên Phòng Ban</th>
+                                        <th>Phòng Ban Cha</th>
+                                        <th>Email</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bangDanhSachPhongBan"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="trangDanhMucGiangVien" class="page-content" style="display: none;">
+                <h2 class="page-title">Quản lý Danh mục Giảng Viên</h2>
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Danh sách Giảng Viên</span>
+                        <button class="btn btn-primary btn-sm" onclick="moModalThemGiangVien()">
+                            <i class="fas fa-plus me-1"></i> Thêm Giảng Viên
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Mã GV</th>
+                                        <th>Họ Tên</th>
+                                        <th>Loại GV</th>
+                                        <th>Chuyên môn</th>
+                                        <th>Email</th>
+                                        <th>Đơn vị</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bangDanhSachGiangVien"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="trangDanhMucDonViDaoTao" class="page-content" style="display: none;">
+                <h2 class="page-title">Quản lý Danh mục Đơn Vị Đào Tạo</h2>
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Danh sách Đơn Vị Đào Tạo</span>
+                        <button class="btn btn-primary btn-sm" onclick="moModalThemDonViDaoTao()">
+                            <i class="fas fa-plus me-1"></i> Thêm Đơn Vị
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Mã ĐV</th>
+                                        <th>Tên Đơn Vị</th>
+                                        <th>Email</th>
+                                        <th>Website</th>
+                                        <th>Lĩnh vực</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bangDanhSachDonViDaoTao"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div id="trangChonNhanVienDaoTao" class="page-content" style="display: none;">
+                <h2 class="page-title">Chọn Nhân viên Tham gia Đào tạo</h2>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="selectKhoaHocChoNhanVien" class="form-label">Chọn Khóa Đào tạo:</label>
+                                <select class="form-select" id="selectKhoaHocChoNhanVien" onchange="taiDanhSachNhanVienCoTheChon()">
+                                    <option value="">Vui lòng chọn khóa học...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <hr>
+                        <fieldset class="mb-3 p-3 border rounded">
+                            <legend class="w-auto px-2 h6">Bộ lọc nhân viên</legend>
+                            <div class="row">
+                                <div class="col-md-3 mb-2">
+                                    <label for="filterPhongBan" class="form-label">Phòng ban:</label>
+                                    <select class="form-select form-select-sm" id="filterPhongBan">
+                                        <option value="">Tất cả</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <label for="filterChucDanh" class="form-label">Chức danh:</label>
+                                    <input type="text" class="form-control form-control-sm" id="filterChucDanh" placeholder="Nhập chức danh...">
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <label for="filterNamCongTac" class="form-label">Năm công tác (tối thiểu):</label>
+                                    <input type="number" class="form-control form-control-sm" id="filterNamCongTac" min="0" placeholder="Số năm...">
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <button type="button" class="btn btn-secondary btn-sm mt-4 w-100" onclick="taiDanhSachNhanVienCoTheChon()">
+                                        <i class="fas fa-filter me-1"></i> Lọc Nhân viên
+                                    </button>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <div class="row">
+                            <div class="col-md-7">
+                                <h5>Danh sách Nhân viên Phù hợp:</h5>
+                                <div class="employee-list-container border rounded p-2">
+                                    <table class="table table-sm table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th><input type="checkbox" id="chonTatCaNhanVien" onchange="xuLyChonTatCaNhanVien(this.checked)"></th>
+                                                <th>Mã NV</th>
+                                                <th>Họ Tên</th>
+                                                <th>Phòng Ban</th>
+                                                <th>Chức Danh</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="bangDanhSachNhanVienDeChon"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <h5>Nhân viên đã chọn (<span id="soLuongNhanVienDaChon">0</span>):</h5>
+                                <div class="employee-list-container border rounded p-2" id="danhSachNhanVienDaChonContainer">
+                                    <ul class="list-group" id="listNhanVienDaChon"></ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 text-end">
+                            <button class="btn btn-success" onclick="luuDanhSachHocVienDaChon()">
+                                <i class="fas fa-save me-1"></i> Lưu Danh sách Học viên
+                            </button>
+                            <button class="btn btn-outline-secondary ms-2" onclick="xuatDanhSachHocVien()">
+                                <i class="fas fa-print me-1"></i> Xuất/In Danh sách
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="trangKeHoachDaoTao" class="page-content" style="display: none;"><h2 class="page-title">Lập Kế hoạch Đào tạo theo Năm</h2><p class="text-muted">Chức năng đang được phát triển.</p></div>
+            <div id="trangYeuCauDaoTao" class="page-content" style="display: none;"><h2 class="page-title">Gửi và Quản lý Yêu cầu Đào tạo</h2><p class="text-muted">Chức năng đang được phát triển.</p></div>
+            <div id="trangTheoDoiKetQua" class="page-content" style="display: none;"><h2 class="page-title">Theo dõi và Đánh giá Kết quả Đào tạo</h2><p class="text-muted">Chức năng đang được phát triển.</p></div>
+            <div id="trangDanhMucNhanVien" class="page-content" style="display: none;"><h2 class="page-title">Quản lý Danh mục Nhân Viên</h2><p class="text-muted">Chức năng đang được phát triển.</p></div>
+            <div id="trangDanhMucChucDanh" class="page-content" style="display: none;"><h2 class="page-title">Quản lý Danh mục Chức Danh</h2><p class="text-muted">Chức năng đang được phát triển.</p></div>
+            <div id="trangDanhMucNguoiPheDuyet" class="page-content" style="display: none;"><h2 class="page-title">Quản lý Danh mục Người Phê Duyệt</h2><p class="text-muted">Chức năng đang được phát triển.</p></div>
+            <div id="trangBaoCao" class="page-content" style="display: none;"><h2 class="page-title">Báo cáo và Thống kê</h2><p class="text-muted">Chức năng đang được phát triển.</p></div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalKhoaHoc" tabindex="-1" aria-labelledby="modalKhoaHocLabel" aria-hidden="true">
+         <div class="modal-dialog modal-xl"> 
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalKhoaHocLabel">Thêm Khóa Đào tạo Mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formKhoaHoc">
+                        <input type="hidden" id="maKhoaHocAn" value="">
+                        <h6><i class="fas fa-info-circle me-2"></i>Thông tin Cơ bản</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="tenKhoaHoc" class="form-label">Tên Khóa học <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="tenKhoaHoc" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="maKhoaHoc" class="form-label">Mã Khóa học</label>
+                                <input type="text" class="form-control" id="maKhoaHoc" placeholder="Tự động nếu bỏ trống">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                 <label for="trangThaiKhoaHoc" class="form-label">Trạng thái</label>
+                                <select class="form-select" id="trangThaiKhoaHoc">
+                                    <option value="Đang hoạt động" selected>Đang hoạt động</option>
+                                    <option value="Ngừng hoạt động">Ngừng hoạt động</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="noiDungChinh" class="form-label">Nội dung chính</label>
+                            <textarea class="form-control" id="noiDungChinh" rows="3"></textarea>
+                        </div>
+                        
+                        <hr>
+                        <h6><i class="fas fa-clock me-2"></i>Thời lượng & <i class="fas fa-dollar-sign me-2"></i>Chi phí</h6>
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label for="thoiLuong" class="form-label">Thời lượng</label>
+                                <input type="number" class="form-control" id="thoiLuong" min="0">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="donViThoiLuong" class="form-label">Đơn vị</label>
+                                <select class="form-select" id="donViThoiLuong">
+                                    <option value="Gio">Giờ</option>
+                                    <option value="Ngay">Ngày</option>
+                                    <option value="Buoi">Buổi</option>
+                                </select>
+                            </div>
+                             <div class="col-md-3 mb-3">
+                                <label for="hinhThucDaoTao" class="form-label">Hình thức</label>
+                                <select class="form-select" id="hinhThucDaoTao">
+                                    <option value="Online">Online</option>
+                                    <option value="Offline">Offline</option>
+                                    <option value="Hybrid">Hybrid</option>
+                                </select>
+                            </div>
+                             <div class="col-md-3 mb-3">
+                                <label for="chiPhiDuKien" class="form-label">Chi phí Dự kiến</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="chiPhiDuKien" min="0">
+                                    <select class="form-select" id="donViTienTe" style="max-width: 100px;">
+                                        <option value="VND">VND</option>
+                                        <option value="USD">USD</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        <h6><i class="fas fa-sitemap me-2"></i>Tổ chức & <i class="fas fa-chalkboard-teacher me-2"></i>Giảng dạy</h6>
+                        <div class="row">
+                             <div class="col-md-4 mb-3">
+                                <label for="maDonViToChucNoiBo" class="form-label">ĐV Tổ chức (Nội bộ)</label>
+                                <select class="form-select select2-khoahoc" id="maDonViToChucNoiBo" style="width: 100%;">
+                                    <option value="">Chọn phòng ban</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="maDonViDaoTaoNgoai" class="form-label">ĐV Đào tạo (Ngoài)</label>
+                                <select class="form-select select2-khoahoc" id="maDonViDaoTaoNgoai" style="width: 100%;">
+                                     <option value="">Chọn đơn vị</option>
+                                </select>
+                            </div>
+                             <div class="col-md-4 mb-3">
+                                <label for="maGiangVienChinh" class="form-label">Giảng viên chính</label>
+                                <select class="form-select select2-khoahoc" id="maGiangVienChinh" style="width: 100%;">
+                                    <option value="">Chọn giảng viên</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        <h6><i class="fas fa-bullseye me-2"></i>Mục tiêu & <i class="fas fa-users me-2"></i>Đối tượng</h6>
+                         <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="mucTieuKhoaHoc" class="form-label">Mục tiêu khóa học</label>
+                                <textarea class="form-control" id="mucTieuKhoaHoc" rows="2"></textarea>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="doiTuongPhuHop" class="form-label">Đối tượng phù hợp</label>
+                                <textarea class="form-control" id="doiTuongPhuHop" rows="2"></textarea>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="taiLieuLienQuan" class="form-label">Tài liệu liên quan (Link Google Drive, ...)</label>
+                            <input type="text" class="form-control" id="taiLieuLienQuan">
+                        </div>
+                        <div class="mb-3">
+                            <label for="ghiChuKhoaHoc" class="form-label">Ghi chú</label>
+                            <textarea class="form-control" id="ghiChuKhoaHoc" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="luuKhoaHoc()">Lưu Thay đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalPhongBan" tabindex="-1" aria-labelledby="modalPhongBanLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg"> 
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalPhongBanLabel">Thêm Phòng Ban Mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formPhongBan">
+                        <input type="hidden" id="maPhongBanAn" value="">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="tenPhongBan" class="form-label">Tên Phòng Ban <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="tenPhongBan" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="maPhongBan" class="form-label">Mã Phòng Ban</label>
+                                <input type="text" class="form-control" id="maPhongBan" placeholder="Tự động nếu bỏ trống">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="maPhongBanCha" class="form-label">Phòng Ban Cha</label>
+                                <select class="form-select select2-phongban" id="maPhongBanCha" style="width: 100%;">
+                                    <option value="">Không có</option>
+                                    </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="emailPhongBan" class="form-label">Email Phòng Ban</label>
+                                <input type="email" class="form-control" id="emailPhongBan">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="soDienThoaiPhongBan" class="form-label">Số Điện Thoại</label>
+                                <input type="tel" class="form-control" id="soDienThoaiPhongBan">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="moTaPhongBan" class="form-label">Mô tả</label>
+                            <textarea class="form-control" id="moTaPhongBan" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="luuPhongBan()">Lưu Thay đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalGiangVien" tabindex="-1" aria-labelledby="modalGiangVienLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl"> 
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalGiangVienLabel">Thêm Giảng Viên Mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formGiangVien">
+                        <input type="hidden" id="maGiangVienAn" value="">
+                        <h6><i class="fas fa-user-tie me-2"></i>Thông tin Cơ bản</h6>
+                        <div class="row">
+                            <div class="col-md-5 mb-3">
+                                <label for="hoTenGV" class="form-label">Họ Tên Giảng Viên <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="hoTenGV" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="maGiangVienModal" class="form-label">Mã Giảng Viên</label>
+                                <input type="text" class="form-control" id="maGiangVienModal" placeholder="Tự động nếu bỏ trống">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="loaiGiangVien" class="form-label">Loại Giảng Viên <span class="text-danger">*</span></label>
+                                <select class="form-select" id="loaiGiangVien" onchange="toggleGiangVienFields()">
+                                    <option value="Nội bộ" selected>Nội bộ</option>
+                                    <option value="Thuê ngoài">Thuê ngoài</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="khuVucGiangVienNoiBo">
+                             <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="maNhanVienGV" class="form-label">Nhân Viên (nếu là GV nội bộ)</label>
+                                    <select class="form-select select2-giangvien" id="maNhanVienGV" style="width: 100%;">
+                                        <option value="">Chọn nhân viên</option>
+                                        </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="khuVucGiangVienThueNgoai" style="display:none;">
+                             <div class="row">
+                                 <div class="col-md-6 mb-3">
+                                    <label for="maDonViDaoTaoGV" class="form-label">Đơn vị Đào tạo (nếu GV thuê ngoài)</label>
+                                    <select class="form-select select2-giangvien" id="maDonViDaoTaoGV" style="width: 100%;">
+                                        <option value="">Chọn đơn vị đào tạo</option>
+                                        </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="chiPhiThueTheoBuoiGV" class="form-label">Chi phí thuê theo buổi/ngày</label>
+                                    <input type="number" class="form-control" id="chiPhiThueTheoBuoiGV" min="0">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        <h6><i class="fas fa-address-card me-2"></i>Thông tin Liên hệ & Chuyên môn</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="chuyenMonChinhGV" class="form-label">Chuyên môn chính</label>
+                                <input type="text" class="form-control" id="chuyenMonChinhGV">
+                            </div>
+                             <div class="col-md-6 mb-3">
+                                <label for="emailGV" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="emailGV">
+                            </div>
+                        </div>
+                        <div class="row">
+                           <div class="col-md-6 mb-3">
+                                <label for="soDienThoaiGV" class="form-label">Số Điện Thoại</label>
+                                <input type="tel" class="form-control" id="soDienThoaiGV">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="danhGiaGV" class="form-label">Đánh giá (1-5 hoặc mô tả)</label>
+                                <input type="text" class="form-control" id="danhGiaGV">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="kinhNghiemGV" class="form-label">Kinh nghiệm</label>
+                            <textarea class="form-control" id="kinhNghiemGV" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="thongTinKhacGV" class="form-label">Thông tin khác (Link CV, Website,...)</label>
+                            <input type="text" class="form-control" id="thongTinKhacGV">
+                        </div>
+                        <div class="mb-3">
+                            <label for="ghiChuGV" class="form-label">Ghi chú</label>
+                            <textarea class="form-control" id="ghiChuGV" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="luuGiangVien()">Lưu Thay đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <div class="modal fade" id="modalDonViDaoTao" tabindex="-1" aria-labelledby="modalDonViDaoTaoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalDonViDaoTaoLabel">Thêm Đơn Vị Đào Tạo Mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formDonViDaoTao">
+                        <input type="hidden" id="maDonViDaoTaoAn" value="">
+                        <h6><i class="fas fa-school me-2"></i>Thông tin Đơn Vị</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="tenDonViDaoTaoModal" class="form-label">Tên Đơn Vị <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="tenDonViDaoTaoModal" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="maDonViDaoTaoModal" class="form-label">Mã Đơn Vị</label>
+                                <input type="text" class="form-control" id="maDonViDaoTaoModal" placeholder="Tự động nếu bỏ trống">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="diaChiDVDT" class="form-label">Địa chỉ</label>
+                            <input type="text" class="form-control" id="diaChiDVDT">
+                        </div>
+                        <hr>
+                        <h6><i class="fas fa-address-book me-2"></i>Thông tin Liên Hệ</h6>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="emailLienHeDVDT" class="form-label">Email Liên Hệ</label>
+                                <input type="email" class="form-control" id="emailLienHeDVDT">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="soDienThoaiLienHeDVDT" class="form-label">Số Điện Thoại</label>
+                                <input type="tel" class="form-control" id="soDienThoaiLienHeDVDT">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="websiteDVDT" class="form-label">Website</label>
+                                <input type="url" class="form-control" id="websiteDVDT">
+                            </div>
+                        </div>
+                         <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="nguoiDaiDienDVDT" class="form-label">Người Đại Diện</label>
+                                <input type="text" class="form-control" id="nguoiDaiDienDVDT">
+                            </div>
+                        </div>
+                        <hr>
+                        <h6><i class="fas fa-info-circle me-2"></i>Thông tin Khác</h6>
+                        <div class="row">
+                             <div class="col-md-6 mb-3">
+                                <label for="linhVucDaoTaoChinhDVDT" class="form-label">Lĩnh vực Đào tạo Chính</label>
+                                <input type="text" class="form-control" id="linhVucDaoTaoChinhDVDT">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="danhGiaDonViDVDT" class="form-label">Đánh giá</label>
+                                <input type="text" class="form-control" id="danhGiaDonViDVDT">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="ghiChuDVDT" class="form-label">Ghi chú</label>
+                            <textarea class="form-control" id="ghiChuDVDT" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="luuDonViDaoTao()">Lưu Thay đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="modalXacNhanXoa" tabindex="-1" aria-labelledby="modalXacNhanXoaLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title" id="modalXacNhanXoaLabel"><i class="fas fa-exclamation-triangle me-2"></i> Xác nhận Xóa</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Bạn có chắc chắn muốn xóa mục này không?
+            <p class="mt-2"><strong>Thông tin:</strong> <span id="thongTinXoaModal"></span></p>
+            Hành động này không thể hoàn tác.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+            <button type="button" class="btn btn-danger" id="btnXacNhanXoaTrongModal">Xóa</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
+      <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+          <strong class="me-auto" id="toastTieuDe">Thông báo</strong>
+          <small id="toastThoiGian">Vừa xong</small>
+          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastNoiDung">
+          Nội dung thông báo ở đây.
+        </div>
+      </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+    <script>
+        // --- KHAI BAO BIEN TOAN CUC ---
+        const CAC_TRANG = document.querySelectorAll('.page-content');
+        const modalKhoaHocInstance = new bootstrap.Modal(document.getElementById('modalKhoaHoc'));
+        const modalPhongBanInstance = new bootstrap.Modal(document.getElementById('modalPhongBan')); 
+        const modalGiangVienInstance = new bootstrap.Modal(document.getElementById('modalGiangVien')); 
+        const modalDonViDaoTaoInstance = new bootstrap.Modal(document.getElementById('modalDonViDaoTao')); 
+        const modalXacNhanXoaInstance = new bootstrap.Modal(document.getElementById('modalXacNhanXoa')); 
+        const toastInstance = new bootstrap.Toast(document.getElementById('liveToast'));
+        let dangChinhSuaKhoaHoc = false;
+        let currentKhoaHocData = null; 
+        let dangChinhSuaPhongBan = false; 
+        let currentPhongBanData = null; 
+        let dangChinhSuaGiangVien = false; 
+        let currentGiangVienData = null; 
+        let dangChinhSuaDonViDaoTao = false; 
+        let currentDonViDaoTaoData = null; 
+        let danhSachNhanVienDaChonTamThoi = [];
+        let hamXuLyKhiXacNhanXoa = null; 
+
+        // --- KHOI TAO KHI TAI TRANG ---
+        document.addEventListener('DOMContentLoaded', function() {
+            hienThiTrang('trangTongQuan'); 
+            
+            if (typeof bootstrap.Collapse === 'undefined') {
+                console.error('Bootstrap Collapse component is not loaded or available!');
+                hienThiToast('Lỗi nghiêm trọng', 'Thành phần giao diện chính (Collapse) không tải được.', 'error');
+            }
+
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run.withSuccessHandler(capNhatTenNguoiDung).layThongTinNguoiDungHienTai();
+            } else {
+                console.warn("Google Apps Script API (google.script.run) khong kha dung. Ban co dang chay tu URL trien khai khong?");
+                capNhatTenNguoiDung({ email: "Khach (Offline)", ten: "Khach (Offline)"});
+            }
+            
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+
+            document.getElementById('btnXacNhanXoaTrongModal').addEventListener('click', function() {
+                if (typeof hamXuLyKhiXacNhanXoa === 'function') {
+                    hamXuLyKhiXacNhanXoa();
+                }
+                modalXacNhanXoaInstance.hide();
+            });
+
+            // Khoi tao Select2 cho cac modal khi chung duoc hien thi
+            $('#modalKhoaHoc').on('shown.bs.modal', function () {
+                const select2Options = { theme: "bootstrap-5", dropdownParent: $(this), width: '100%' };
+                if (!$('#maDonViToChucNoiBo').data('select2')) { $('#maDonViToChucNoiBo').select2(select2Options); }
+                if (!$('#maDonViDaoTaoNgoai').data('select2')) { $('#maDonViDaoTaoNgoai').select2(select2Options); }
+                if (!$('#maGiangVienChinh').data('select2')) { $('#maGiangVienChinh').select2(select2Options); }
+                
+                // Set lai gia tri cho Select2 neu dang o che do sua
+                if (dangChinhSuaKhoaHoc && currentKhoaHocData) {
+                    $('#maDonViToChucNoiBo').val(currentKhoaHocData.maDonViToChucNoiBo || '').trigger('change');
+                    $('#maDonViDaoTaoNgoai').val(currentKhoaHocData.maDonViDaoTaoNgoai || '').trigger('change');
+                    $('#maGiangVienChinh').val(currentKhoaHocData.maGiangVienChinh || '').trigger('change');
+                }
+            });
+            $('#modalPhongBan').on('shown.bs.modal', function () {
+                 if (!$('#maPhongBanCha').data('select2')) {
+                    $('#maPhongBanCha').select2({ theme: "bootstrap-5", dropdownParent: $(this), width: '100%' });
+                 }
+                 if (dangChinhSuaPhongBan && currentPhongBanData) {
+                    $('#maPhongBanCha').val(currentPhongBanData.maPhongBanCha || "").trigger('change');
+                 }
+            });
+             $('#modalGiangVien').on('shown.bs.modal', function () {
+                const select2OptionsGV = { theme: "bootstrap-5", dropdownParent: $(this), width: '100%' };
+                if (!$('#maNhanVienGV').data('select2')) { $('#maNhanVienGV').select2(select2OptionsGV); }
+                if (!$('#maDonViDaoTaoGV').data('select2')) { $('#maDonViDaoTaoGV').select2(select2OptionsGV); }
+
+                if (dangChinhSuaGiangVien && currentGiangVienData) {
+                    $('#maNhanVienGV').val(currentGiangVienData.maNhanVienGV || "").trigger('change');
+                    $('#maDonViDaoTaoGV').val(currentGiangVienData.maDonViDaoTao || "").trigger('change');
+                }
+            });
+            
+        });
+
+        // --- HAM XU LY GIAO DIEN CHUNG (TIEN ICH) ---
+        function hienThiTrang(idTrang) {
+            CAC_TRANG.forEach(trang => {
+                trang.style.display = 'none';
+            });
+            const trangCanHienThi = document.getElementById(idTrang);
+            if (trangCanHienThi) {
+                trangCanHienThi.style.display = 'block';
+            } else {
+                console.error("Khong tim thay trang voi ID: ", idTrang);
+                document.getElementById('trangTongQuan').style.display = 'block'; 
+            }
+
+            document.querySelectorAll('.navbar .nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            const activeNavbarLink = document.querySelector(`.navbar .nav-link[onclick="hienThiTrang('${idTrang}')"]`);
+            if (activeNavbarLink) {
+                activeNavbarLink.classList.add('active');
+            }
+
+            document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+                link.classList.remove('active-sidebar'); 
+            });
+
+            const activeSidebarLink = document.querySelector(`.sidebar .nav-link[onclick="hienThiTrang('${idTrang}')"]`);
+            if (activeSidebarLink) {
+                activeSidebarLink.classList.add('active-sidebar'); 
+
+                const parentCollapseDiv = activeSidebarLink.closest('.collapse'); 
+                if (parentCollapseDiv) { 
+                    const parentTriggerLink = document.querySelector(`a[data-bs-target="#${parentCollapseDiv.id}"]`);
+                    if (parentTriggerLink) {
+                        parentTriggerLink.classList.add('active-sidebar'); 
+                        var bsCollapse = bootstrap.Collapse.getInstance(parentCollapseDiv);
+                        if (!bsCollapse) { 
+                            bsCollapse = new bootstrap.Collapse(parentCollapseDiv, {toggle: false});
+                        }
+                        if (bsCollapse && !parentCollapseDiv.classList.contains('show')) { 
+                            bsCollapse.show();
+                        } else if (!bsCollapse) {
+                             console.error("Khong the khoi tao Bootstrap Collapse cho: ", parentCollapseDiv.id);
+                        }
+                    }
+                }
+            }
+
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                if (idTrang === 'trangDanhMucKhoaHoc') {
+                    taiDanhSachKhoaHoc();
+                    taiDuLieuChoSelectsFormKhoaHoc();
+                } else if (idTrang === 'trangDanhMucPhongBan') {
+                    taiDanhSachPhongBan();
+                    taiDanhSachPhongBanChaChoSelect(); 
+                } else if (idTrang === 'trangDanhMucGiangVien') {
+                    taiDanhSachGiangVien();
+                    taiDuLieuChoSelectsFormGiangVien();
+                } else if (idTrang === 'trangDanhMucDonViDaoTao') {
+                    taiDanhSachDonViDaoTao();
+                }
+                 else if (idTrang === 'trangChonNhanVienDaoTao') {
+                    taiKhoaHocVaoSelectChonNhanVien();
+                    taiPhongBanVaoFilterChonNhanVien();
+                    danhSachNhanVienDaChonTamThoi = []; 
+                    capNhatDanhSachNhanVienDaChonUI();
+                    document.getElementById('bangDanhSachNhanVienDeChon').innerHTML = '<tr><td colspan="5" class="text-center">Vui lòng chọn khóa học và áp dụng bộ lọc.</td></tr>';
+                }
+            } else {
+                 if (idTrang !== 'trangTongQuan') { 
+                    hienThiToast('Cảnh báo', 'Không thể tải dữ liệu. Vui lòng kiểm tra kết nối hoặc đảm bảo bạn đang chạy ứng dụng từ URL triển khai.', 'warning');
+                }
+            }
+        }
+
+        function hienThiToast(tieuDe, noiDung, loaiThongBao = 'info') {
+            document.getElementById('toastTieuDe').textContent = tieuDe;
+            document.getElementById('toastNoiDung').textContent = noiDung;
+            const toastHeader = document.querySelector('#liveToast .toast-header');
+            toastHeader.classList.remove('bg-success', 'text-white', 'bg-danger', 'text-white', 'bg-warning', 'text-dark', 'bg-info', 'text-white');
+            switch (loaiThongBao) {
+                case 'success': toastHeader.classList.add('bg-success', 'text-white'); break;
+                case 'error': toastHeader.classList.add('bg-danger', 'text-white'); break;
+                case 'warning': toastHeader.classList.add('bg-warning', 'text-dark'); break;
+                case 'info': default: toastHeader.classList.add('bg-info', 'text-white'); break;
+            }
+            toastInstance.show();
+        }
+
+        function capNhatTenNguoiDung(nguoiDung) {
+            if (nguoiDung && nguoiDung.email) {
+                document.getElementById('tenNguoiDung').textContent = nguoiDung.ten || nguoiDung.email;
+            } else {
+                document.getElementById('tenNguoiDung').textContent = "Khách";
+            }
+        }
+        
+        function xuLyDangXuat() {
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run.withSuccessHandler(function(urlLogout){
+                    if (urlLogout && typeof urlLogout === 'string') {
+                        window.location.href = urlLogout;
+                    } else {
+                        hienThiToast('Thông báo', 'Bạn đã yêu cầu đăng xuất.', 'info');
+                    }
+                }).withFailureHandler(xuLyLoi).logout();
+            } else {
+                 hienThiToast('Thông báo', 'Chức năng đăng xuất yêu cầu chạy từ server.', 'info');
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('appSidebar').classList.toggle('active');
+        }
+        
+        function xuLyLoi(errorObject) { 
+             console.error('Lỗi chi tiết từ Google Apps Script: ', JSON.stringify(errorObject, null, 2));
+            const message = typeof errorObject === 'string' ? errorObject : (errorObject && errorObject.message ? errorObject.message : 'Lỗi không xác định từ server.');
+            hienThiToast('Lỗi Hệ thống', 'Có lỗi xảy ra: ' + message, 'error');
+        }
+        
+        // --- MODULE: DANH MUC KHOA HOC ---
+        function moModalThemKhoaHoc() {
+            dangChinhSuaKhoaHoc = false;
+            currentKhoaHocData = null;
+            document.getElementById('formKhoaHoc').reset();
+            document.getElementById('maKhoaHocAn').value = '';
+            document.getElementById('modalKhoaHocLabel').textContent = 'Thêm Khóa Đào tạo Mới';
+            document.getElementById('maKhoaHoc').disabled = false;
+            taiDuLieuChoSelectsFormKhoaHoc(true); 
+            modalKhoaHocInstance.show();
+        }
+
+        function moModalSuaKhoaHoc(khoaHocDuLieu) {
+            dangChinhSuaKhoaHoc = true;
+            currentKhoaHocData = khoaHocDuLieu; 
+            document.getElementById('formKhoaHoc').reset();
+            document.getElementById('modalKhoaHocLabel').textContent = 'Chỉnh sửa Khóa Đào tạo';
+            document.getElementById('maKhoaHocAn').value = khoaHocDuLieu.maKhoaHoc;
+            document.getElementById('maKhoaHoc').value = khoaHocDuLieu.maKhoaHoc;
+            document.getElementById('maKhoaHoc').disabled = true;
+            document.getElementById('tenKhoaHoc').value = khoaHocDuLieu.tenKhoaHoc;
+            document.getElementById('noiDungChinh').value = khoaHocDuLieu.noiDungChinh || '';
+            document.getElementById('thoiLuong').value = khoaHocDuLieu.thoiLuong || '';
+            document.getElementById('donViThoiLuong').value = khoaHocDuLieu.donViThoiLuong || 'Gio'; 
+            document.getElementById('chiPhiDuKien').value = khoaHocDuLieu.chiPhiDuKien || '';
+            document.getElementById('donViTienTe').value = khoaHocDuLieu.donViTienTe || 'VND';
+            document.getElementById('hinhThucDaoTao').value = khoaHocDuLieu.hinhThucDaoTao || 'Offline';
+            document.getElementById('trangThaiKhoaHoc').value = khoaHocDuLieu.trangThaiKhoaHoc || 'Đang hoạt động';
+            
+            taiDuLieuChoSelectsFormKhoaHoc(true); // Tai lai du lieu, Select2 se duoc khoi tao/cap nhat trong 'shown.bs.modal'
+            
+            document.getElementById('taiLieuLienQuan').value = khoaHocDuLieu.taiLieuLienQuan || '';
+            document.getElementById('mucTieuKhoaHoc').value = khoaHocDuLieu.mucTieuKhoaHoc || '';
+            document.getElementById('doiTuongPhuHop').value = khoaHocDuLieu.doiTuongPhuHop || '';
+            document.getElementById('ghiChuKhoaHoc').value = khoaHocDuLieu.ghiChu || '';
+            modalKhoaHocInstance.show();
+        }
+
+        function luuKhoaHoc() {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                hienThiToast('Lỗi', 'Không thể kết nối đến server. Vui lòng kiểm tra lại.', 'error');
+                return;
+            }
+            const khoaHoc = {
+                maKhoaHoc: document.getElementById('maKhoaHoc').value.trim(),
+                tenKhoaHoc: document.getElementById('tenKhoaHoc').value.trim(),
+                noiDungChinh: document.getElementById('noiDungChinh').value.trim(),
+                thoiLuong: document.getElementById('thoiLuong').value,
+                donViThoiLuong: document.getElementById('donViThoiLuong').value, 
+                chiPhiDuKien: document.getElementById('chiPhiDuKien').value,
+                donViTienTe: document.getElementById('donViTienTe').value,
+                hinhThucDaoTao: document.getElementById('hinhThucDaoTao').value,
+                maDonViToChucNoiBo: $('#maDonViToChucNoiBo').val(), 
+                maDonViDaoTaoNgoai: $('#maDonViDaoTaoNgoai').val(),
+                maGiangVienChinh: $('#maGiangVienChinh').val(), 
+                taiLieuLienQuan: document.getElementById('taiLieuLienQuan').value.trim(),
+                mucTieuKhoaHoc: document.getElementById('mucTieuKhoaHoc').value.trim(),
+                doiTuongPhuHop: document.getElementById('doiTuongPhuHop').value.trim(),
+                trangThaiKhoaHoc: document.getElementById('trangThaiKhoaHoc').value,
+                ghiChu: document.getElementById('ghiChuKhoaHoc').value.trim()
+            };
+
+            if (!khoaHoc.tenKhoaHoc) {
+                hienThiToast('Lỗi', 'Tên khóa học không được để trống.', 'error');
+                return;
+            }
+
+            const successCallback = function(response) {
+                xuLyKetQuaLuuKhoaHoc(response, dangChinhSuaKhoaHoc ? "Cập nhật khóa học thành công!" : "Thêm khóa học mới thành công!");
+            };
+
+            if (dangChinhSuaKhoaHoc) {
+                khoaHoc.maKhoaHoc = document.getElementById('maKhoaHocAn').value;
+                google.script.run.withSuccessHandler(successCallback).withFailureHandler(xuLyLoi).capNhatKhoaHoc(khoaHoc);
+            } else {
+                google.script.run.withSuccessHandler(successCallback).withFailureHandler(xuLyLoi).themKhoaHoc(khoaHoc);
+            }
+        }
+
+        function xuLyKetQuaLuuKhoaHoc(response, thongBaoThanhCong) {
+            if (response.thanhCong) {
+                hienThiToast('Thành công', thongBaoThanhCong, 'success');
+                modalKhoaHocInstance.hide();
+                taiDanhSachKhoaHoc();
+            } else {
+                hienThiToast('Lỗi', response.thongBao || 'Có lỗi xảy ra từ server.', 'error');
+            }
+        }
+
+        function taiDanhSachKhoaHoc() {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) return;
+            const tbody = document.getElementById('bangDanhSachKhoaHoc');
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center"><div class="spinner-border spinner-border-sm"></div> Đang tải...</td></tr>';
+            google.script.run.withSuccessHandler(hienThiDanhSachKhoaHoc).withFailureHandler(xuLyLoi).layDanhSachKhoaHoc();
+        }
+
+        function hienThiDanhSachKhoaHoc(danhSachMang) {
+            const tbody = document.getElementById('bangDanhSachKhoaHoc');
+            tbody.innerHTML = '';
+            if (!danhSachMang || danhSachMang.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">Không có dữ liệu khóa học.</td></tr>';
+                return;
+            }
+            danhSachMang.forEach(khoaHoc => {
+                const tr = document.createElement('tr');
+                let donViThoiLuongDisplay = khoaHoc.donViThoiLuong || '';
+                if (donViThoiLuongDisplay.toLowerCase() === 'gio') donViThoiLuongDisplay = 'Giờ';
+                else if (donViThoiLuongDisplay.toLowerCase() === 'ngay') donViThoiLuongDisplay = 'Ngày';
+                else if (donViThoiLuongDisplay.toLowerCase() === 'buoi') donViThoiLuongDisplay = 'Buổi';
+
+                let tooltipContent = '';
+                if (khoaHoc.tenGiangVienChinh) {
+                    tooltipContent += `<b>Giảng viên:</b> ${khoaHoc.tenGiangVienChinh}<br>`;
+                }
+                let donViToChucDisplay = '';
+                if (khoaHoc.tenDonViToChucNoiBo) {
+                    donViToChucDisplay = khoaHoc.tenDonViToChucNoiBo + " (Nội bộ)";
+                } else if (khoaHoc.tenDonViDaoTaoNgoai) {
+                    donViToChucDisplay = khoaHoc.tenDonViDaoTaoNgoai + " (Ngoài)";
+                }
+                if (donViToChucDisplay) {
+                     tooltipContent += `<b>Đơn vị tổ chức:</b> ${donViToChucDisplay}<br>`;
+                }
+                if (khoaHoc.hinhThucDaoTao) {
+                     tooltipContent += `<b>Hình thức:</b> ${khoaHoc.hinhThucDaoTao}`;
+                }
+                
+                tr.innerHTML = `
+                    <td><span class="ma-khoa-hoc-rut-gon" data-bs-toggle="tooltip" title="${khoaHoc.maKhoaHoc || ''}">${khoaHoc.maKhoaHoc || ''}</span></td>
+                    <td><span class="ten-khoa-hoc-tooltip" data-bs-toggle="tooltip" data-bs-html="true" title="${tooltipContent.replace(/"/g, '&quot;')}">${khoaHoc.tenKhoaHoc || ''}</span></td>
+                    <td>${khoaHoc.thoiLuong || ''} ${donViThoiLuongDisplay}</td>
+                    <td>${khoaHoc.hinhThucDaoTao || ''}</td>
+                    <td>${khoaHoc.chiPhiDuKien ? new Intl.NumberFormat('vi-VN').format(khoaHoc.chiPhiDuKien) + ' ' + (khoaHoc.donViTienTe || 'VND') : ''}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick='suaKhoaHoc("${khoaHoc.maKhoaHoc}")' title="Sửa"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick='moModalXacNhanXoaKhoaHoc("${khoaHoc.maKhoaHoc}", "${khoaHoc.tenKhoaHoc}")' title="Xóa"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            var tooltipTriggerList = [].slice.call(tbody.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+        }
+
+        function suaKhoaHoc(maKhoaHoc) {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) return;
+            google.script.run.withSuccessHandler(function(khoaHocChiTiet) {
+                if (khoaHocChiTiet && khoaHocChiTiet.maKhoaHoc) {
+                    moModalSuaKhoaHoc(khoaHocChiTiet);
+                } else {
+                    hienThiToast('Lỗi', 'Không tìm thấy thông tin khóa học để sửa.', 'error');
+                }
+            }).withFailureHandler(xuLyLoi).layChiTietKhoaHoc(maKhoaHoc);
+        }
+        
+        function moModalXacNhanXoaKhoaHoc(maKhoaHoc, tenKhoaHoc) {
+            document.getElementById('thongTinXoaModal').textContent = `Khóa học: ${tenKhoaHoc} (Mã: ${maKhoaHoc})`;
+            hamXuLyKhiXacNhanXoa = function() {
+                thucHienXoaKhoaHoc(maKhoaHoc, tenKhoaHoc);
+            };
+            modalXacNhanXoaInstance.show();
+        }
+
+        function thucHienXoaKhoaHoc(maKhoaHoc, tenKhoaHoc) {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                 hienThiToast('Lỗi', 'Không thể kết nối server để xóa.', 'error');
+                return;
+            }
+            google.script.run.withSuccessHandler(function(response) {
+                if (response.thanhCong) {
+                    hienThiToast('Thành công', `Đã xóa khóa học "${tenKhoaHoc}".`, 'success');
+                    taiDanhSachKhoaHoc();
+                } else {
+                    hienThiToast('Lỗi', response.thongBao || 'Xóa khóa học thất bại.', 'error');
+                }
+            }).withFailureHandler(xuLyLoi).xoaKhoaHoc(maKhoaHoc);
+        }
+
+
+        function taiDuLieuChoSelectsFormKhoaHoc(resetOptions = false, callback) {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                if(callback) callback();
+                return;
+            }
+            let loadedCount = 0;
+            const totalSelects = 3;
+            
+            const populateSelect = (selectId, placeholder, dataList, valueField, textField, additionalTextFn) => {
+                const select = $(`#${selectId}`);
+                const currentValue = select.val();
+                select.empty().append(new Option(placeholder, ''));
+                if (dataList) {
+                    dataList.forEach(item => {
+                        let text = item[textField];
+                        if (additionalTextFn) {
+                            text += additionalTextFn(item);
+                        }
+                        select.append(new Option(text, item[valueField]));
+                    });
+                }
+                if (resetOptions || !select.find(`option[value="${currentValue}"]`).length) {
+                    select.val("").trigger('change');
+                } else {
+                    select.val(currentValue).trigger('change');
+                }
+            };
+
+            const checkAllLoaded = () => {
+                loadedCount++;
+                if (loadedCount === totalSelects) {
+                    if (callback) callback();
+                }
+            };
+
+            google.script.run.withSuccessHandler(function(danhSach) {
+                populateSelect('maDonViToChucNoiBo', 'Chọn phòng ban', danhSach, 'maPhongBan', 'tenPhongBan');
+                checkAllLoaded();
+            }).withFailureHandler(xuLyLoi).layDanhSachPhongBan();
+            
+             google.script.run.withSuccessHandler(function(danhSach) {
+                populateSelect('maDonViDaoTaoNgoai', 'Chọn đơn vị đào tạo', danhSach, 'maDonViDaoTao', 'tenDonViDaoTao');
+                checkAllLoaded();
+            }).withFailureHandler(xuLyLoi).layDanhSachDonViDaoTao();
+
+            google.script.run.withSuccessHandler(function(danhSach) {
+                populateSelect('maGiangVienChinh', 'Chọn giảng viên', danhSach, 'maGiangVien', 'hoTenGV', item => ` (${item.loaiGiangVien || 'N/A'})`);
+                checkAllLoaded();
+            }).withFailureHandler(xuLyLoi).layDanhSachGiangVien();
+        }
+
+        // --- MODULE: DANH MUC PHONG BAN ---
+        function moModalThemPhongBan() {
+            dangChinhSuaPhongBan = false;
+            currentPhongBanData = null;
+            document.getElementById('formPhongBan').reset();
+            document.getElementById('maPhongBanAn').value = '';
+            document.getElementById('modalPhongBanLabel').textContent = 'Thêm Phòng Ban Mới';
+            document.getElementById('maPhongBan').disabled = false;
+            taiDanhSachPhongBanChaChoSelect(true); 
+            modalPhongBanInstance.show();
+        }
+
+        function moModalSuaPhongBan(phongBanDuLieu) {
+            dangChinhSuaPhongBan = true;
+            currentPhongBanData = phongBanDuLieu;
+            document.getElementById('formPhongBan').reset();
+            document.getElementById('modalPhongBanLabel').textContent = 'Chỉnh sửa Phòng Ban';
+
+            document.getElementById('maPhongBanAn').value = phongBanDuLieu.maPhongBan;
+            document.getElementById('maPhongBan').value = phongBanDuLieu.maPhongBan;
+            document.getElementById('maPhongBan').disabled = true;
+            document.getElementById('tenPhongBan').value = phongBanDuLieu.tenPhongBan;
+            document.getElementById('emailPhongBan').value = phongBanDuLieu.emailPhongBan || "";
+            document.getElementById('soDienThoaiPhongBan').value = phongBanDuLieu.soDienThoaiPhongBan || "";
+            document.getElementById('moTaPhongBan').value = phongBanDuLieu.moTa || "";
+            
+            taiDanhSachPhongBanChaChoSelect(true); 
+            modalPhongBanInstance.show();
+        }
+
+        function luuPhongBan() {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                hienThiToast('Lỗi', 'Không thể kết nối đến server.', 'error'); return;
+            }
+            const phongBan = {
+                maPhongBan: document.getElementById('maPhongBan').value.trim(),
+                tenPhongBan: document.getElementById('tenPhongBan').value.trim(),
+                maPhongBanCha: $('#maPhongBanCha').val(),
+                emailPhongBan: document.getElementById('emailPhongBan').value.trim(),
+                soDienThoaiPhongBan: document.getElementById('soDienThoaiPhongBan').value.trim(),
+                moTa: document.getElementById('moTaPhongBan').value.trim()
+            };
+
+            if (!phongBan.tenPhongBan) {
+                hienThiToast('Lỗi', 'Tên phòng ban không được để trống.', 'error'); return;
+            }
+
+            const successCallbackLuuPhongBan = function(response) {
+                if (response.thanhCong) {
+                    hienThiToast('Thành công', dangChinhSuaPhongBan ? "Cập nhật phòng ban thành công!" : "Thêm phòng ban mới thành công!", 'success');
+                    modalPhongBanInstance.hide();
+                    taiDanhSachPhongBan(); 
+                    taiDanhSachPhongBanChaChoSelect(true); 
+                } else {
+                    hienThiToast('Lỗi', response.thongBao || 'Có lỗi xảy ra từ server.', 'error');
+                }
+            };
+            
+            if (dangChinhSuaPhongBan) {
+                phongBan.maPhongBan = document.getElementById('maPhongBanAn').value; 
+                google.script.run.withSuccessHandler(successCallbackLuuPhongBan).withFailureHandler(xuLyLoi).capNhatPhongBan(phongBan);
+            } else {
+                google.script.run.withSuccessHandler(successCallbackLuuPhongBan).withFailureHandler(xuLyLoi).themPhongBan(phongBan);
+            }
+        }
+
+        function taiDanhSachPhongBan() {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) return;
+            const tbody = document.getElementById('bangDanhSachPhongBan');
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center"><div class="spinner-border spinner-border-sm"></div> Đang tải...</td></tr>';
+            google.script.run.withSuccessHandler(hienThiDanhSachPhongBan).withFailureHandler(xuLyLoi).layDanhSachPhongBanDayDu();
+        }
+
+        function hienThiDanhSachPhongBan(danhSachPhongBan) {
+            const tbody = document.getElementById('bangDanhSachPhongBan');
+            tbody.innerHTML = '';
+            if (!danhSachPhongBan || danhSachPhongBan.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">Không có dữ liệu phòng ban.</td></tr>';
+                return;
+            }
+            const phongBanMap = {};
+            danhSachPhongBan.forEach(pb => {
+                phongBanMap[pb.maPhongBan] = pb.tenPhongBan;
+            });
+
+            danhSachPhongBan.forEach(pb => {
+                const tr = document.createElement('tr');
+                const tenPhongBanCha = pb.maPhongBanCha ? (phongBanMap[pb.maPhongBanCha] || pb.maPhongBanCha) : 'Không có';
+                tr.innerHTML = `
+                    <td>${pb.maPhongBan || ''}</td>
+                    <td>${pb.tenPhongBan || ''}</td>
+                    <td>${tenPhongBanCha}</td>
+                    <td>${pb.emailPhongBan || ''}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick='suaPhongBan("${pb.maPhongBan}")' title="Sửa"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick='moModalXacNhanXoaPhongBan("${pb.maPhongBan}", "${pb.tenPhongBan}")' title="Xóa"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        
+        function suaPhongBan(maPhongBan) {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) return;
+            google.script.run.withSuccessHandler(function(phongBanChiTiet) {
+                if (phongBanChiTiet && phongBanChiTiet.maPhongBan) {
+                    moModalSuaPhongBan(phongBanChiTiet);
+                } else {
+                    hienThiToast('Lỗi', 'Không tìm thấy thông tin phòng ban để sửa.', 'error');
+                }
+            }).withFailureHandler(xuLyLoi).layChiTietPhongBan(maPhongBan);
+        }
+
+        function moModalXacNhanXoaPhongBan(maPhongBan, tenPhongBan) {
+            document.getElementById('thongTinXoaModal').textContent = `Phòng ban: ${tenPhongBan} (Mã: ${maPhongBan})`;
+            hamXuLyKhiXacNhanXoa = function() {
+                thucHienXoaPhongBan(maPhongBan, tenPhongBan);
+            };
+            modalXacNhanXoaInstance.show();
+        }
+
+        function thucHienXoaPhongBan(maPhongBan, tenPhongBan) {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                 hienThiToast('Lỗi', 'Không thể kết nối server để xóa.', 'error'); return;
+            }
+            google.script.run.withSuccessHandler(function(response) {
+                if (response.thanhCong) {
+                    hienThiToast('Thành công', `Đã xóa phòng ban "${tenPhongBan}".`, 'success');
+                    taiDanhSachPhongBan();
+                    taiDanhSachPhongBanChaChoSelect(true); 
+                } else {
+                    hienThiToast('Lỗi', response.thongBao || 'Xóa phòng ban thất bại.', 'error');
+                }
+            }).withFailureHandler(xuLyLoi).xoaPhongBan(maPhongBan); 
+        }
+
+        function taiDanhSachPhongBanChaChoSelect(resetOptions = false, callback) {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                 if(callback) callback();
+                return;
+            }
+            google.script.run.withSuccessHandler(function(danhSach) {
+                const select = $('#maPhongBanCha'); 
+                const currentValue = select.val(); 
+                select.empty().append(new Option('Không có', '')); 
+                if (danhSach) {
+                    danhSach.forEach(item => {
+                        select.append(new Option(item.tenPhongBan, item.maPhongBan));
+                    });
+                }
+                
+                if (select.data('select2')) { 
+                    select.trigger('change.select2'); 
+                } else {
+                    select.select2({ theme: "bootstrap-5", dropdownParent: $('#modalPhongBan'), width: '100%' });
+                }
+                
+                if (currentValue && select.find(`option[value="${currentValue}"]`).length && !resetOptions) {
+                     select.val(currentValue).trigger('change');
+                } else {
+                     select.val("").trigger('change');
+                }
+
+                if(callback) callback();
+            }).withFailureHandler(xuLyLoi).layDanhSachPhongBan(); 
+        }
+
+        // --- MODULE: DANH MUC GIANG VIEN ---
+        function moModalThemGiangVien() {
+            dangChinhSuaGiangVien = false;
+            currentGiangVienData = null;
+            document.getElementById('formGiangVien').reset();
+            document.getElementById('maGiangVienAn').value = '';
+            document.getElementById('modalGiangVienLabel').textContent = 'Thêm Giảng Viên Mới';
+            document.getElementById('maGiangVienModal').disabled = false;
+            document.getElementById('loaiGiangVien').value = 'Nội bộ'; 
+            toggleGiangVienFields(); 
+            $('.select2-giangvien').val(null).trigger('change'); 
+            taiDuLieuChoSelectsFormGiangVien(true);
+            modalGiangVienInstance.show();
+        }
+
+        function moModalSuaGiangVien(giangVienDuLieu) {
+            dangChinhSuaGiangVien = true;
+            currentGiangVienData = giangVienDuLieu;
+            document.getElementById('formGiangVien').reset();
+            document.getElementById('modalGiangVienLabel').textContent = 'Chỉnh sửa Giảng Viên';
+
+            document.getElementById('maGiangVienAn').value = giangVienDuLieu.maGiangVien;
+            document.getElementById('maGiangVienModal').value = giangVienDuLieu.maGiangVien;
+            document.getElementById('maGiangVienModal').disabled = true;
+            document.getElementById('hoTenGV').value = giangVienDuLieu.hoTenGV;
+            document.getElementById('loaiGiangVien').value = giangVienDuLieu.loaiGiangVien;
+            toggleGiangVienFields(); 
+
+            taiDuLieuChoSelectsFormGiangVien(true); 
+            
+            document.getElementById('chiPhiThueTheoBuoiGV').value = giangVienDuLieu.chiPhiThueTheoBuoi || "";
+            document.getElementById('chuyenMonChinhGV').value = giangVienDuLieu.chuyenMonChinh || "";
+            document.getElementById('emailGV').value = giangVienDuLieu.emailGV || "";
+            document.getElementById('soDienThoaiGV').value = giangVienDuLieu.soDienThoaiGV || "";
+            document.getElementById('danhGiaGV').value = giangVienDuLieu.danhGiaGV || "";
+            document.getElementById('kinhNghiemGV').value = giangVienDuLieu.kinhNghiem || "";
+            document.getElementById('thongTinKhacGV').value = giangVienDuLieu.thongTinKhac || "";
+            document.getElementById('ghiChuGV').value = giangVienDuLieu.ghiChu || "";
+            
+            modalGiangVienInstance.show();
+        }
+        
+        function toggleGiangVienFields() {
+            const loaiGV = document.getElementById('loaiGiangVien').value;
+            const khuVucNoiBo = document.getElementById('khuVucGiangVienNoiBo');
+            const khuVucThueNgoai = document.getElementById('khuVucGiangVienThueNgoai');
+
+            if (loaiGV === 'Nội bộ') {
+                khuVucNoiBo.style.display = 'block'; 
+                khuVucThueNgoai.style.display = 'none';
+            } else { 
+                khuVucNoiBo.style.display = 'none';
+                khuVucThueNgoai.style.display = 'block'; 
+            }
+        }
+
+        function taiDuLieuChoSelectsFormGiangVien(resetOptions = false, callback){
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                if(callback) callback();
+                return;
+            }
+            let loadedCountGV = 0;
+            const totalSelectsGV = 2;
+            const select2OptionsGV = { theme: "bootstrap-5", dropdownParent: $('#modalGiangVien'), width: '100%' };
+
+            const checkAllLoadedGV = () => {
+                loadedCountGV++;
+                if(loadedCountGV === totalSelectsGV) {
+                    if ($('#maNhanVienGV').data('select2')) { $('#maNhanVienGV').trigger('change'); } 
+                    else { $('#maNhanVienGV').select2(select2OptionsGV); }
+
+                    if ($('#maDonViDaoTaoGV').data('select2')) { $('#maDonViDaoTaoGV').trigger('change'); }
+                    else { $('#maDonViDaoTaoGV').select2(select2OptionsGV); }
+                    
+                    if (callback) callback();
+                }
+            }
+
+            google.script.run.withSuccessHandler(function(danhSach) {
+                const select = $('#maNhanVienGV');
+                const currentValue = select.val();
+                select.empty().append(new Option('Chọn nhân viên', ''));
+                if (danhSach) {
+                    danhSach.forEach(item => { 
+                        const displayText = `${item.hoTen || 'N/A'} (${item.maNhanVien || 'N/A'})`;
+                        select.append(new Option(displayText, item.maNhanVien));
+                    });
+                }
+                if (resetOptions || !select.find(`option[value="${currentValue}"]`).length) {
+                    select.val("").trigger('change');
+                } else {
+                    select.val(currentValue).trigger('change');
+                }
+                checkAllLoadedGV();
+            }).withFailureHandler(xuLyLoi).layDanhSachNhanVien(); 
+
+             google.script.run.withSuccessHandler(function(danhSach) {
+                const select = $('#maDonViDaoTaoGV');
+                const currentValue = select.val();
+                select.empty().append(new Option('Chọn đơn vị đào tạo', ''));
+                if (danhSach) {
+                    danhSach.forEach(item => { 
+                        select.append(new Option(item.tenDonViDaoTao, item.maDonViDaoTao));
+                    });
+                }
+                if (resetOptions || !select.find(`option[value="${currentValue}"]`).length) {
+                    select.val("").trigger('change');
+                } else {
+                    select.val(currentValue).trigger('change');
+                }
+                checkAllLoadedGV();
+            }).withFailureHandler(xuLyLoi).layDanhSachDonViDaoTao();
+        }
+
+
+        function luuGiangVien() {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                hienThiToast('Lỗi', 'Không thể kết nối đến server.', 'error'); return;
+            }
+            const giangVien = {
+                maGiangVien: document.getElementById('maGiangVienModal').value.trim(),
+                hoTenGV: document.getElementById('hoTenGV').value.trim(),
+                loaiGiangVien: document.getElementById('loaiGiangVien').value,
+                maNhanVienGV: $('#maNhanVienGV').val(), 
+                maDonViDaoTao: $('#maDonViDaoTaoGV').val(), 
+                chiPhiThueTheoBuoi: document.getElementById('chiPhiThueTheoBuoiGV').value,
+                chuyenMonChinh: document.getElementById('chuyenMonChinhGV').value.trim(),
+                emailGV: document.getElementById('emailGV').value.trim(),
+                soDienThoaiGV: document.getElementById('soDienThoaiGV').value.trim(),
+                danhGiaGV: document.getElementById('danhGiaGV').value.trim(),
+                kinhNghiem: document.getElementById('kinhNghiemGV').value.trim(),
+                thongTinKhac: document.getElementById('thongTinKhacGV').value.trim(),
+                ghiChu: document.getElementById('ghiChuGV').value.trim()
+            };
+
+            if (!giangVien.hoTenGV) {
+                hienThiToast('Lỗi', 'Họ tên giảng viên không được để trống.', 'error'); return;
+            }
+            if (!giangVien.loaiGiangVien) {
+                hienThiToast('Lỗi', 'Vui lòng chọn loại giảng viên.', 'error'); return;
+            }
+            
+            if (giangVien.loaiGiangVien === 'Thuê ngoài') {
+                giangVien.maNhanVienGV = ""; 
+            } else {
+                giangVien.maDonViDaoTao = ""; 
+                giangVien.chiPhiThueTheoBuoi = "";
+            }
+
+
+            const successCallback = function(response) {
+                if (response.thanhCong) {
+                    hienThiToast('Thành công', dangChinhSuaGiangVien ? "Cập nhật giảng viên thành công!" : "Thêm giảng viên mới thành công!", 'success');
+                    modalGiangVienInstance.hide();
+                    taiDanhSachGiangVien(); 
+                } else {
+                    hienThiToast('Lỗi', response.thongBao || 'Có lỗi xảy ra từ server.', 'error');
+                }
+            };
+
+            if (dangChinhSuaGiangVien) {
+                giangVien.maGiangVien = document.getElementById('maGiangVienAn').value; 
+                google.script.run.withSuccessHandler(successCallback).withFailureHandler(xuLyLoi).capNhatGiangVien(giangVien);
+            } else {
+                google.script.run.withSuccessHandler(successCallback).withFailureHandler(xuLyLoi).themGiangVien(giangVien);
+            }
+        }
+
+        function taiDanhSachGiangVien() {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) return;
+            const tbody = document.getElementById('bangDanhSachGiangVien');
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center"><div class="spinner-border spinner-border-sm"></div> Đang tải...</td></tr>';
+            google.script.run.withSuccessHandler(hienThiDanhSachGiangVien).withFailureHandler(xuLyLoi).layDanhSachGiangVienDayDu();
+        }
+
+        function hienThiDanhSachGiangVien(danhSachGV) {
+            const tbody = document.getElementById('bangDanhSachGiangVien');
+            tbody.innerHTML = '';
+            if (!danhSachGV || danhSachGV.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center">Không có dữ liệu giảng viên.</td></tr>';
+                return;
+            }
+            danhSachGV.forEach(gv => {
+                const tr = document.createElement('tr');
+                let donViDisplay = '';
+                if (gv.loaiGiangVien === 'Nội bộ' && gv.tenNhanVienGV) { 
+                    donViDisplay = `NV: ${gv.tenNhanVienGV}`;
+                } else if (gv.loaiGiangVien === 'Thuê ngoài' && gv.tenDonViDaoTaoGV) { 
+                    donViDisplay = `ĐV: ${gv.tenDonViDaoTaoGV}`;
+                }
+
+                tr.innerHTML = `
+                    <td>${gv.maGiangVien || ''}</td>
+                    <td>${gv.hoTenGV || ''}</td>
+                    <td>${gv.loaiGiangVien || ''}</td>
+                    <td>${gv.chuyenMonChinh || ''}</td>
+                    <td>${gv.emailGV || ''}</td>
+                    <td>${donViDisplay}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick='suaGiangVien("${gv.maGiangVien}")' title="Sửa"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick='moModalXacNhanXoaGiangVien("${gv.maGiangVien}", "${gv.hoTenGV}")' title="Xóa"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function suaGiangVien(maGiangVien) {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) return;
+            google.script.run.withSuccessHandler(function(giangVienChiTiet) {
+                if (giangVienChiTiet && giangVienChiTiet.maGiangVien) {
+                    moModalSuaGiangVien(giangVienChiTiet);
+                } else {
+                    hienThiToast('Lỗi', 'Không tìm thấy thông tin giảng viên để sửa.', 'error');
+                }
+            }).withFailureHandler(xuLyLoi).layChiTietGiangVien(maGiangVien);
+        }
+
+        function moModalXacNhanXoaGiangVien(maGiangVien, hoTenGV) {
+            document.getElementById('thongTinXoaModal').textContent = `Giảng viên: ${hoTenGV} (Mã: ${maGiangVien})`;
+            hamXuLyKhiXacNhanXoa = function() {
+                thucHienXoaGiangVien(maGiangVien, hoTenGV);
+            };
+            modalXacNhanXoaInstance.show();
+        }
+
+        function thucHienXoaGiangVien(maGiangVien, hoTenGV) {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                 hienThiToast('Lỗi', 'Không thể kết nối server để xóa.', 'error'); return;
+            }
+            google.script.run.withSuccessHandler(function(response) {
+                if (response.thanhCong) {
+                    hienThiToast('Thành công', `Đã xóa giảng viên "${hoTenGV}".`, 'success');
+                    taiDanhSachGiangVien();
+                } else {
+                    hienThiToast('Lỗi', response.thongBao || 'Xóa giảng viên thất bại.', 'error');
+                }
+            }).withFailureHandler(xuLyLoi).xoaGiangVien(maGiangVien);
+        }
+
+        // --- MODULE: DANH MUC DON VI DAO TAO ---
+        function moModalThemDonViDaoTao() {
+            dangChinhSuaDonViDaoTao = false;
+            currentDonViDaoTaoData = null;
+            document.getElementById('formDonViDaoTao').reset();
+            document.getElementById('maDonViDaoTaoAn').value = '';
+            document.getElementById('modalDonViDaoTaoLabel').textContent = 'Thêm Đơn Vị Đào Tạo Mới';
+            document.getElementById('maDonViDaoTaoModal').disabled = false;
+            modalDonViDaoTaoInstance.show();
+        }
+
+        function moModalSuaDonViDaoTao(dvdtDuLieu) {
+            dangChinhSuaDonViDaoTao = true;
+            currentDonViDaoTaoData = dvdtDuLieu;
+            document.getElementById('formDonViDaoTao').reset();
+            document.getElementById('modalDonViDaoTaoLabel').textContent = 'Chỉnh sửa Đơn Vị Đào Tạo';
+
+            document.getElementById('maDonViDaoTaoAn').value = dvdtDuLieu.maDonViDaoTao;
+            document.getElementById('maDonViDaoTaoModal').value = dvdtDuLieu.maDonViDaoTao;
+            document.getElementById('maDonViDaoTaoModal').disabled = true;
+            document.getElementById('tenDonViDaoTaoModal').value = dvdtDuLieu.tenDonViDaoTao;
+            document.getElementById('diaChiDVDT').value = dvdtDuLieu.diaChi || "";
+            document.getElementById('emailLienHeDVDT').value = dvdtDuLieu.emailLienHe || "";
+            document.getElementById('soDienThoaiLienHeDVDT').value = dvdtDuLieu.soDienThoaiLienHe || "";
+            document.getElementById('websiteDVDT').value = dvdtDuLieu.website || "";
+            document.getElementById('nguoiDaiDienDVDT').value = dvdtDuLieu.nguoiDaiDien || "";
+            document.getElementById('linhVucDaoTaoChinhDVDT').value = dvdtDuLieu.linhVucDaoTaoChinh || "";
+            document.getElementById('danhGiaDonViDVDT').value = dvdtDuLieu.danhGiaDonVi || "";
+            document.getElementById('ghiChuDVDT').value = dvdtDuLieu.ghiChu || "";
+            
+            modalDonViDaoTaoInstance.show();
+        }
+
+        function luuDonViDaoTao() {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                hienThiToast('Lỗi', 'Không thể kết nối đến server.', 'error'); return;
+            }
+            const donViDaoTao = {
+                maDonViDaoTao: document.getElementById('maDonViDaoTaoModal').value.trim(),
+                tenDonViDaoTao: document.getElementById('tenDonViDaoTaoModal').value.trim(),
+                diaChi: document.getElementById('diaChiDVDT').value.trim(),
+                emailLienHe: document.getElementById('emailLienHeDVDT').value.trim(),
+                soDienThoaiLienHe: document.getElementById('soDienThoaiLienHeDVDT').value.trim(),
+                website: document.getElementById('websiteDVDT').value.trim(),
+                nguoiDaiDien: document.getElementById('nguoiDaiDienDVDT').value.trim(),
+                linhVucDaoTaoChinh: document.getElementById('linhVucDaoTaoChinhDVDT').value.trim(),
+                danhGiaDonVi: document.getElementById('danhGiaDonViDVDT').value.trim(),
+                ghiChu: document.getElementById('ghiChuDVDT').value.trim()
+            };
+
+            if (!donViDaoTao.tenDonViDaoTao) {
+                hienThiToast('Lỗi', 'Tên đơn vị đào tạo không được để trống.', 'error'); return;
+            }
+
+            const successCallback = function(response) {
+                if (response.thanhCong) {
+                    hienThiToast('Thành công', dangChinhSuaDonViDaoTao ? "Cập nhật đơn vị đào tạo thành công!" : "Thêm đơn vị đào tạo mới thành công!", 'success');
+                    modalDonViDaoTaoInstance.hide();
+                    taiDanhSachDonViDaoTao(); 
+                } else {
+                    hienThiToast('Lỗi', response.thongBao || 'Có lỗi xảy ra từ server.', 'error');
+                }
+            };
+
+            if (dangChinhSuaDonViDaoTao) {
+                donViDaoTao.maDonViDaoTao = document.getElementById('maDonViDaoTaoAn').value; 
+                google.script.run.withSuccessHandler(successCallback).withFailureHandler(xuLyLoi).capNhatDonViDaoTao(donViDaoTao);
+            } else {
+                google.script.run.withSuccessHandler(successCallback).withFailureHandler(xuLyLoi).themDonViDaoTao(donViDaoTao);
+            }
+        }
+
+        function taiDanhSachDonViDaoTao() {
+            console.log("taiDanhSachDonViDaoTao duoc goi"); 
+            if (typeof google === 'undefined' || !google.script || !google.script.run) return;
+            const tbody = document.getElementById('bangDanhSachDonViDaoTao');
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center"><div class="spinner-border spinner-border-sm"></div> Đang tải...</td></tr>';
+            google.script.run.withSuccessHandler(hienThiDanhSachDonViDaoTao).withFailureHandler(xuLyLoi).layDanhSachDonViDaoTaoFull(); 
+        }
+
+        function hienThiDanhSachDonViDaoTao(danhSachDVDT) {
+            console.log("hienThiDanhSachDonViDaoTao voi du lieu:", danhSachDVDT); 
+            const tbody = document.getElementById('bangDanhSachDonViDaoTao');
+            tbody.innerHTML = '';
+            if (!danhSachDVDT || danhSachDVDT.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">Không có dữ liệu đơn vị đào tạo.</td></tr>';
+                return;
+            }
+            danhSachDVDT.forEach(dv => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${dv.maDonViDaoTao || ''}</td>
+                    <td>${dv.tenDonViDaoTao || ''}</td>
+                    <td>${dv.emailLienHe || ''}</td>
+                    <td>${dv.website || ''}</td>
+                    <td>${dv.linhVucDaoTaoChinh || ''}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick='suaDonViDaoTao("${dv.maDonViDaoTao}")' title="Sửa"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick='moModalXacNhanXoaDonViDaoTao("${dv.maDonViDaoTao}", "${dv.tenDonViDaoTao}")' title="Xóa"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function suaDonViDaoTao(maDonViDaoTao) {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) return;
+            google.script.run.withSuccessHandler(function(dvdtChiTiet) {
+                if (dvdtChiTiet && dvdtChiTiet.maDonViDaoTao) {
+                    moModalSuaDonViDaoTao(dvdtChiTiet);
+                } else {
+                    hienThiToast('Lỗi', 'Không tìm thấy thông tin đơn vị đào tạo để sửa.', 'error');
+                }
+            }).withFailureHandler(xuLyLoi).layChiTietDonViDaoTao(maDonViDaoTao);
+        }
+
+        function moModalXacNhanXoaDonViDaoTao(maDonViDaoTao, tenDonViDaoTao) {
+            document.getElementById('thongTinXoaModal').textContent = `Đơn vị đào tạo: ${tenDonViDaoTao} (Mã: ${maDonViDaoTao})`;
+            hamXuLyKhiXacNhanXoa = function() {
+                thucHienXoaDonViDaoTao(maDonViDaoTao, tenDonViDaoTao);
+            };
+            modalXacNhanXoaInstance.show();
+        }
+
+        function thucHienXoaDonViDaoTao(maDonViDaoTao, tenDonViDaoTao) {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                 hienThiToast('Lỗi', 'Không thể kết nối server để xóa.', 'error'); return;
+            }
+            google.script.run.withSuccessHandler(function(response) {
+                if (response.thanhCong) {
+                    hienThiToast('Thành công', `Đã xóa đơn vị đào tạo "${tenDonViDaoTao}".`, 'success');
+                    taiDanhSachDonViDaoTao();
+                } else {
+                    hienThiToast('Lỗi', response.thongBao || 'Xóa đơn vị đào tạo thất bại.', 'error');
+                }
+            }).withFailureHandler(xuLyLoi).xoaDonViDaoTao(maDonViDaoTao);
+        }
+
+
+        // --- MODULE: CHON NHAN VIEN DAO TAO ---
+        function taiKhoaHocVaoSelectChonNhanVien() {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) return;
+            const selectKhoaHoc = document.getElementById('selectKhoaHocChoNhanVien');
+            selectKhoaHoc.innerHTML = '<option value="">Đang tải khóa học...</option>';
+             google.script.run.withSuccessHandler(function(danhSachKhoaHoc) {
+                selectKhoaHoc.innerHTML = '<option value="">Vui lòng chọn khóa học...</option>';
+                if (danhSachKhoaHoc && danhSachKhoaHoc.length > 0) {
+                    danhSachKhoaHoc.forEach(kh => {
+                        selectKhoaHoc.innerHTML += `<option value="${kh.maKhoaHoc}">${kh.tenKhoaHoc} (Mã: ${kh.maKhoaHoc})</option>`;
+                    });
+                } else {
+                     selectKhoaHoc.innerHTML = '<option value="">Không có khóa học nào.</option>';
+                }
+            }).withFailureHandler(xuLyLoi).layDanhSachKhoaHoc();
+        }
+        function taiPhongBanVaoFilterChonNhanVien() {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) return;
+            const selectPhongBan = document.getElementById('filterPhongBan');
+            selectPhongBan.innerHTML = '<option value="">Đang tải phòng ban...</option>';
+            google.script.run.withSuccessHandler(function(danhSachPhongBan) {
+                selectPhongBan.innerHTML = '<option value="">Tất cả phòng ban</option>';
+                if (danhSachPhongBan) {
+                    danhSachPhongBan.forEach(pb => {
+                        selectPhongBan.innerHTML += `<option value="${pb.maPhongBan}">${pb.tenPhongBan}</option>`;
+                    });
+                }
+            }).withFailureHandler(xuLyLoi).layDanhSachPhongBan();
+        }
+        function taiDanhSachNhanVienCoTheChon() {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                 hienThiToast('Lỗi', 'Không thể kết nối server để lọc nhân viên.', 'error');
+                return;
+            }
+            const maKhoaHocDaChon = document.getElementById('selectKhoaHocChoNhanVien').value;
+            if (!maKhoaHocDaChon) {
+                hienThiToast('Thông báo', 'Vui lòng chọn một khóa học trước khi lọc nhân viên.', 'info');
+                document.getElementById('bangDanhSachNhanVienDeChon').innerHTML = '<tr><td colspan="5" class="text-center">Vui lòng chọn khóa học.</td></tr>';
+                return;
+            }
+            const boLoc = {
+                maPhongBan: document.getElementById('filterPhongBan').value,
+                chucDanh: document.getElementById('filterChucDanh').value.trim(),
+                namCongTac: document.getElementById('filterNamCongTac').value
+            };
+            const tbody = document.getElementById('bangDanhSachNhanVienDeChon');
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center"><div class="spinner-border spinner-border-sm"></div> Đang tải nhân viên...</td></tr>';
+            google.script.run.withSuccessHandler(hienThiDanhSachNhanVienDeChon).withFailureHandler(xuLyLoi).layDanhSachNhanVienCoBoLoc(maKhoaHocDaChon, boLoc);
+        }
+
+        function hienThiDanhSachNhanVienDeChon(danhSachNhanVien) {
+            const tbody = document.getElementById('bangDanhSachNhanVienDeChon');
+            tbody.innerHTML = '';
+            document.getElementById('chonTatCaNhanVien').checked = false;
+            if (!danhSachNhanVien || danhSachNhanVien.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">Không tìm thấy nhân viên nào phù hợp với bộ lọc.</td></tr>';
+                return;
+            }
+            danhSachNhanVien.forEach(nv => {
+                const daChon = danhSachNhanVienDaChonTamThoi.some(selectedNv => selectedNv.maNhanVien === nv.maNhanVien);
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><input type="checkbox" class="form-check-input checkbox-nhan-vien" value="${nv.maNhanVien}" data-ten="${nv.hoTen}" ${daChon ? 'checked' : ''} onchange="xuLyChonMotNhanVien(this)"></td>
+                    <td>${nv.maNhanVien || ''}</td>
+                    <td>${nv.hoTen || ''}</td>
+                    <td>${nv.tenPhongBan || nv.maPhongBan || ''}</td>
+                    <td>${nv.chucDanh || ''}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        
+        function xuLyChonTatCaNhanVien(trangThaiChecked) {
+            const checkboxes = document.querySelectorAll('#bangDanhSachNhanVienDeChon .checkbox-nhan-vien');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = trangThaiChecked;
+                xuLyChonMotNhanVien(checkbox);
+            });
+        }
+
+        function xuLyChonMotNhanVien(checkboxElement) {
+            const maNhanVien = checkboxElement.value;
+            const tenNhanVien = checkboxElement.dataset.ten;
+            if (checkboxElement.checked) {
+                if (!danhSachNhanVienDaChonTamThoi.some(nv => nv.maNhanVien === maNhanVien)) {
+                    danhSachNhanVienDaChonTamThoi.push({ maNhanVien: maNhanVien, hoTen: tenNhanVien });
+                }
+            } else {
+                danhSachNhanVienDaChonTamThoi = danhSachNhanVienDaChonTamThoi.filter(nv => nv.maNhanVien !== maNhanVien);
+            }
+            capNhatDanhSachNhanVienDaChonUI();
+        }
+
+        function capNhatDanhSachNhanVienDaChonUI() {
+            const ul = document.getElementById('listNhanVienDaChon');
+            ul.innerHTML = '';
+            danhSachNhanVienDaChonTamThoi.forEach(nv => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item list-group-item-sm d-flex justify-content-between align-items-center';
+                li.textContent = `${nv.hoTen} (Mã: ${nv.maNhanVien})`;
+                const btnXoa = document.createElement('button');
+                btnXoa.className = 'btn btn-xs btn-outline-danger py-0 px-1';
+                btnXoa.innerHTML = '<i class="fas fa-times fa-xs"></i>';
+                btnXoa.onclick = function() { boChonNhanVienTuDanhSach(nv.maNhanVien); };
+                li.appendChild(btnXoa);
+                ul.appendChild(li);
+            });
+            document.getElementById('soLuongNhanVienDaChon').textContent = danhSachNhanVienDaChonTamThoi.length;
+        }
+
+        function boChonNhanVienTuDanhSach(maNhanVien) {
+            danhSachNhanVienDaChonTamThoi = danhSachNhanVienDaChonTamThoi.filter(nv => nv.maNhanVien !== maNhanVien);
+            capNhatDanhSachNhanVienDaChonUI();
+            const checkboxTrongBang = document.querySelector(`#bangDanhSachNhanVienDeChon .checkbox-nhan-vien[value="${maNhanVien}"]`);
+            if (checkboxTrongBang) {
+                checkboxTrongBang.checked = false;
+            }
+        }
+
+        function luuDanhSachHocVienDaChon() {
+            if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                hienThiToast('Lỗi', 'Không thể kết nối server.', 'error');
+                return;
+            }
+            const maKhoaHocDaChon = document.getElementById('selectKhoaHocChoNhanVien').value;
+            if (!maKhoaHocDaChon) {
+                hienThiToast('Lỗi', 'Vui lòng chọn khóa học.', 'error');
+                return;
+            }
+            if (danhSachNhanVienDaChonTamThoi.length === 0) {
+                hienThiToast('Thông báo', 'Chưa có nhân viên nào được chọn.', 'info');
+                return;
+            }
+            const danhSachMaNhanVien = danhSachNhanVienDaChonTamThoi.map(nv => nv.maNhanVien);
+            hienThiToast('Thông báo', 'Đang lưu danh sách học viên...', 'info');
+            google.script.run
+                .withSuccessHandler(function(response) {
+                    if (response.thanhCong) {
+                        hienThiToast('Thành công', response.thongBao || 'Lưu danh sách học viên thành công!', 'success');
+                        danhSachNhanVienDaChonTamThoi = [];
+                        capNhatDanhSachNhanVienDaChonUI();
+                        taiDanhSachNhanVienCoTheChon(); 
+                    } else {
+                        hienThiToast('Lỗi', response.thongBao || 'Lưu danh sách thất bại.', 'error');
+                    }
+                })
+                .withFailureHandler(xuLyLoi)
+                .luuDanhSachHocVienChoKhoaHoc(maKhoaHocDaChon, danhSachMaNhanVien);
+        }
+
+        function xuatDanhSachHocVien() {
+            if (danhSachNhanVienDaChonTamThoi.length > 0) {
+                let danhSachText = "Danh sách nhân viên đã chọn:\n";
+                danhSachNhanVienDaChonTamThoi.forEach(nv => {
+                    danhSachText += `- ${nv.hoTen} (Mã: ${nv.maNhanVien})\n`;
+                });
+                console.log(danhSachText);
+                hienThiToast('Thông tin', 'Xem danh sách đã chọn trong Console (F12). Chức năng xuất/in sẽ được phát triển sau.', 'info');
+            } else {
+                hienThiToast('Thông báo', 'Chưa có nhân viên nào được chọn để xuất.', 'info');
+            }
+        }
+    </script>
+</body>
+</html>
