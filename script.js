@@ -938,7 +938,6 @@ async function taiDanhSachDonViDaoTao() {
     const tbody = document.getElementById('bangDanhSachDonViDaoTao');
     tbody.innerHTML = '<tr><td colspan="6" class="text-center"><div class="spinner-border spinner-border-sm"></div> Đang tải...</td></tr>';
     try {
-        // GOI DUNG TEN HAM API
         const response = await fetch(`${API_URL}?action=layDanhSachDonViDaoTaoDayDu`); 
         const result = await response.json();
         if (result.success && result.data) {
@@ -1061,4 +1060,3 @@ function capNhatDanhSachNhanVienDaChonUI() {}
 function boChonNhanVienTuDanhSach(maNhanVien) {}
 function luuDanhSachHocVienDaChon() { hienThiToast("Thông báo", "Chức năng đang được cập nhật để dùng API.", "info");}
 function xuatDanhSachHocVien() {}
-
