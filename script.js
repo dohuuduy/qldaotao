@@ -1,7 +1,6 @@
-
 // FILE: script.js
 
-// THAY THE URL NAY BANG URL WEB APP DA TRIEN KHAI CUA BAN (KET THUC BANG /exec)
+// QUAN TRONG: THAY THE URL NAY BANG URL WEB APP DA TRIEN KHAI CUA BAN (KET THUC BANG /exec)
 const API_URL = "https://script.google.com/macros/s/AKfycbz27L07uv71ddw0IOGgos5wPK_Yd4BlikwY5icS1H-LNcc6HNimFPsJLrNkTO5UIkuyEQ/exec"; 
 
 // --- KHAI BAO BIEN TOAN CUC ---
@@ -65,34 +64,42 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('sidebarToggler').addEventListener('click', toggleSidebar);
     document.getElementById('btnDangXuat').addEventListener('click', xuLyDangXuat);
 
-    // Khoi tao Select2 cho cac modal khi chung duoc hien thi
-    const initSelect2InModal = (modalId, selectSelectors, options) => {
-        $(modalId).on('shown.bs.modal', function () {
-            selectSelectors.forEach(selector => {
-                if (!$(selector).data('select2')) {
-                    $(selector).select2(options);
-                }
-            });
-            // Logic set gia tri khi sua se duoc goi trong ham mo modal sua
-        });
-    };
 
-    initSelect2InModal('#modalKhoaHoc', 
-        ['#maDonViToChucNoiBo', '#maDonViDaoTaoNgoai', '#maGiangVienChinh'],
-        { theme: "bootstrap-5", dropdownParent: $('#modalKhoaHoc'), width: '100%' }
-    );
-    initSelect2InModal('#modalPhongBan', 
-        ['#maPhongBanCha'],
-        { theme: "bootstrap-5", dropdownParent: $('#modalPhongBan'), width: '100%' }
-    );
-    initSelect2InModal('#modalGiangVien', 
-        ['#maNhanVienGV', '#maDonViDaoTaoGV'],
-        { theme: "bootstrap-5", dropdownParent: $('#modalGiangVien'), width: '100%' }
-    );
+    // Khoi tao Select2 cho cac modal khi chung duoc hien thi
+     $('#modalKhoaHoc').on('shown.bs.modal', function () {
+        const select2Options = { theme: "bootstrap-5", dropdownParent: $(this), width: '100%' };
+        if (!$('#maDonViToChucNoiBo').data('select2')) { $('#maDonViToChucNoiBo').select2(select2Options); }
+        if (!$('#maDonViDaoTaoNgoai').data('select2')) { $('#maDonViDaoTaoNgoai').select2(select2Options); }
+        if (!$('#maGiangVienChinh').data('select2')) { $('#maGiangVienChinh').select2(select2Options); }
+        
+        if (dangChinhSuaKhoaHoc && currentKhoaHocData) {
+            $('#maDonViToChucNoiBo').val(currentKhoaHocData.maDonViToChucNoiBo || '').trigger('change');
+            $('#maDonViDaoTaoNgoai').val(currentKhoaHocData.maDonViDaoTaoNgoai || '').trigger('change');
+            $('#maGiangVienChinh').val(currentKhoaHocData.maGiangVienChinh || '').trigger('change');
+        }
+    });
+    $('#modalPhongBan').on('shown.bs.modal', function () {
+         if (!$('#maPhongBanCha').data('select2')) {
+            $('#maPhongBanCha').select2({ theme: "bootstrap-5", dropdownParent: $(this), width: '100%' });
+         }
+         if (dangChinhSuaPhongBan && currentPhongBanData) {
+            $('#maPhongBanCha').val(currentPhongBanData.maPhongBanCha || "").trigger('change');
+         }
+    });
+     $('#modalGiangVien').on('shown.bs.modal', function () {
+        const select2OptionsGV = { theme: "bootstrap-5", dropdownParent: $(this), width: '100%' };
+        if (!$('#maNhanVienGV').data('select2')) { $('#maNhanVienGV').select2(select2OptionsGV); }
+        if (!$('#maDonViDaoTaoGV').data('select2')) { $('#maDonViDaoTaoGV').select2(select2OptionsGV); }
+
+        if (dangChinhSuaGiangVien && currentGiangVienData) {
+            $('#maNhanVienGV').val(currentGiangVienData.maNhanVienGV || "").trigger('change');
+            $('#maDonViDaoTaoGV').val(currentGiangVienData.maDonViDaoTao || "").trigger('change');
+        }
+    });
+    
 });
 
 // --- HAM XU LY GIAO DIEN CHUNG (TIEN ICH) ---
-// (Cac ham hienThiTrang, hienThiToast, capNhatTenNguoiDung, xuLyDangXuat, toggleSidebar, xuLyLoiAPI giu nguyen nhu phien ban truoc)
 function hienThiTrang(idTrang) {
     CAC_TRANG.forEach(trang => {
         trang.style.display = 'none';
@@ -153,8 +160,8 @@ function hienThiTrang(idTrang) {
         taiDanhSachDonViDaoTao();
     }
      else if (idTrang === 'trangChonNhanVienDaoTao') {
-        // taiKhoaHocVaoSelectChonNhanVien(); // Se duoc goi khi can
-        // taiPhongBanVaoFilterChonNhanVien(); // Se duoc goi khi can
+        taiKhoaHocVaoSelectChonNhanVien();
+        taiPhongBanVaoFilterChonNhanVien();
         danhSachNhanVienDaChonTamThoi = []; 
         capNhatDanhSachNhanVienDaChonUI();
         document.getElementById('bangDanhSachNhanVienDeChon').innerHTML = '<tr><td colspan="5" class="text-center">Vui lòng chọn khóa học và áp dụng bộ lọc.</td></tr>';
@@ -931,6 +938,7 @@ async function taiDanhSachDonViDaoTao() {
     const tbody = document.getElementById('bangDanhSachDonViDaoTao');
     tbody.innerHTML = '<tr><td colspan="6" class="text-center"><div class="spinner-border spinner-border-sm"></div> Đang tải...</td></tr>';
     try {
+        // GOI DUNG TEN HAM API
         const response = await fetch(`${API_URL}?action=layDanhSachDonViDaoTaoDayDu`); 
         const result = await response.json();
         if (result.success && result.data) {
@@ -1053,8 +1061,4 @@ function capNhatDanhSachNhanVienDaChonUI() {}
 function boChonNhanVienTuDanhSach(maNhanVien) {}
 function luuDanhSachHocVienDaChon() { hienThiToast("Thông báo", "Chức năng đang được cập nhật để dùng API.", "info");}
 function xuatDanhSachHocVien() {}
-
-    </script>
-</body>
-</html>
 
