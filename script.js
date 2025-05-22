@@ -2,7 +2,7 @@
 // FILE: script.js
 
 // THAY THE URL NAY BANG URL WEB APP DA TRIEN KHAI CUA BAN (KET THUC BANG /exec)
-const API_URL = "https://script.google.com/macros/s/AKfycbzu-viGotjHtufdGyaGrpgyRFaSBpZ0GVWUirGOGQC063NQm1QwKch-V3J6hGfJSiyLIw/exec"; 
+const API_URL = "https://script.google.com/macros/s/AKfycbz27L07uv71ddw0IOGgos5wPK_Yd4BlikwY5icS1H-LNcc6HNimFPsJLrNkTO5UIkuyEQ/exec"; 
 
 // --- KHAI BAO BIEN TOAN CUC ---
 const CAC_TRANG = document.querySelectorAll('.page-content');
