@@ -1,13 +1,54 @@
-
 /* FILE: style.css */
 body {
     font-family: 'Inter', sans-serif; 
     background-color: #f8f9fa; 
-    padding-top: 70px; /* Dieu chinh neu navbar cua ban cao hon */
+    padding-top: 56px; 
 }
 .navbar {
     background-color: #ffffff; 
     box-shadow: 0 2px 4px rgba(0,0,0,.1); 
+}
+.navbar .nav-link {
+    color: #343a40 !important; 
+    font-weight: 500;
+    padding-left: 0.8rem !important;
+    padding-right: 0.8rem !important;
+}
+.navbar .nav-link.active, .navbar .nav-link:hover {
+    color: #007bff !important; 
+}
+
+.sidebar {
+    height: calc(100vh - 56px); 
+    position: fixed;
+    top: 56px; 
+    left: 0;
+    width: 250px; 
+    background-color: #343a40; 
+    color: #ffffff; 
+    z-index: 100; 
+    transition: all 0.3s;
+    overflow-y: auto; 
+    padding-top: 1rem; 
+}
+.sidebar .nav-link {
+    color: #adb5bd; 
+    padding: 10px 15px;
+    border-radius: 0.25rem; 
+    margin-bottom: 5px; 
+}
+.sidebar .nav-link:hover, .sidebar .nav-link.active-sidebar { 
+    color: #ffffff; 
+    background-color: #495057; 
+}
+.sidebar .nav-link .fa-fw {
+    margin-right: 8px; 
+}
+.content-wrapper {
+    margin-left: 250px; 
+    padding-top: 20px; 
+    padding-bottom: 20px;
+    transition: margin-left 0.3s;
 }
 .page-title {
     margin-bottom: 1.5rem;
@@ -28,7 +69,68 @@ body {
     background-color: #0056b3;
     border-color: #0056b3;
 }
+
+@media (max-width: 992px) {
+    .sidebar {
+        left: -250px; 
+        top: 0; 
+        padding-top: 56px; 
+        height: 100vh;
+    }
+    .sidebar.active {
+        left: 0; 
+    }
+    .content-wrapper {
+        margin-left: 0; 
+    }
+}
+
+.employee-list-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+.ma-khoa-hoc-rut-gon {
+    display: inline-block;
+    max-width: 120px; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom; 
+}
+.ten-khoa-hoc-tooltip { 
+    cursor: help; 
+}
 .modal-body .form-label {
     font-weight: 500; 
 }
-/* Them cac style khac neu can */
+.modal-body hr {
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+.modal-body h6 { 
+    color: #007bff;
+    margin-bottom: 1rem;
+    margin-top: 0.5rem;
+    font-weight: 600;
+}
+
+/* Select2 custom styling */
+.select2-container--bootstrap-5 .select2-selection--single {
+    height: calc(1.5em + .75rem + 2px);
+    padding: .375rem .75rem;
+    display: flex;
+    align-items: center;
+}
+.select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+    line-height: 1.5;
+}
+.select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow {
+    height: calc(1.5em + .75rem);
+    position: absolute;
+    top: 50%;
+    right: .75rem;
+    transform: translateY(-50%);
+}
+.select2-dropdown { 
+    z-index: 1061 !important; /* Tang z-index de hien thi tren modal */
+}
